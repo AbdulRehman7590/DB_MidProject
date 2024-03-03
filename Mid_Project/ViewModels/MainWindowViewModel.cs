@@ -21,7 +21,9 @@ namespace Mid_Project.ViewModels
             StartClock();   
         }
 
-        // Buttons Clicks Connections #############################################################################################
+        /// <summary>
+        /// Button Connections /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// </summary>
         public RelayCommands studentSection => new RelayCommands(execute => StudentSection());
         public RelayCommands advisorSection => new RelayCommands(execute => AdvisorSection());
         public RelayCommands projectSection => new RelayCommands(execute => ProjectSection());
@@ -32,7 +34,9 @@ namespace Mid_Project.ViewModels
         public RelayCommands logOut => new RelayCommands(execute => Application.Current.Shutdown());
 
 
-        // Clock Working ##########################################################################################################
+        /// <summary>
+        ///  Clock Working /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// </summary>
         private string _currentTime;
         public string CurrentTime
         {
@@ -56,8 +60,10 @@ namespace Mid_Project.ViewModels
         }
     
         
-        // Button CLicks Functions ################################################################################################
-
+        /// <summary>
+        /// Button Functionalities /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// </summary>
+        
         // Student Section
         private void StudentSection()
         {
@@ -70,7 +76,7 @@ namespace Mid_Project.ViewModels
         private void AdvisorSection()
         {
             Panel.Children.Clear();
-            Panel.Children.Add(new advisorUC());
+            Panel.Children.Add(new advisorUC(Panel, address));
             address.Content = "Home -> Advisor Section";
         }
 
@@ -78,7 +84,7 @@ namespace Mid_Project.ViewModels
         private void ProjectSection()
         {
             Panel.Children.Clear();
-            Panel.Children.Add(new projectUC());
+            Panel.Children.Add(new projectUC(Panel, address));
             address.Content = "Home -> Project Section";
         }
 
@@ -86,7 +92,7 @@ namespace Mid_Project.ViewModels
         private void GroupSection()
         {
             Panel.Children.Clear();
-            Panel.Children.Add(new groupUC());
+            Panel.Children.Add(new groupUC(Panel, address));
             address.Content = "Home -> Group Section";
         }
 
@@ -94,7 +100,7 @@ namespace Mid_Project.ViewModels
         private void EvaluationSection()
         {
             Panel.Children.Clear();
-            Panel.Children.Add(new evaluationUC());
+            Panel.Children.Add(new evaluationUC(Panel, address));
             address.Content = "Home -> Evaluation Section";
         }
         
@@ -102,7 +108,7 @@ namespace Mid_Project.ViewModels
         private void ReportSection()
         {
             Panel.Children.Clear();
-            Panel.Children.Add(new reportUC());
+            Panel.Children.Add(new reportUC(Panel, address));
             address.Content = "Home -> Report Section";
         }
 

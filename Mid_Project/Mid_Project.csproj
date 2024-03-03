@@ -57,7 +57,12 @@
     </ApplicationDefinition>
     <Compile Include="MVVM\RelayCommands.cs" />
     <Compile Include="MVVM\ViewModelBase.cs" />
+    <Compile Include="ViewModels\AdvisorViewModel.cs" />
+    <Compile Include="ViewModels\EvaluationViewModel.cs" />
+    <Compile Include="ViewModels\GroupViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\ProjectViewModel.cs" />
+    <Compile Include="ViewModels\ReportViewModel.cs" />
     <Compile Include="ViewModels\StudentViewModel.cs" />
     <Compile Include="Views\Advisor\AddAvisorUC.xaml.cs">
       <DependentUpon>AddAvisorUC.xaml</DependentUpon>
