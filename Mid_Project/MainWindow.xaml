@@ -1,0 +1,102 @@
+﻿<Window x:Class="Mid_Project.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mid_Project" 
+        mc:Ignorable="d"
+        Title="FYP Evaluators" MinHeight="550" MinWidth="850">
+    
+    <!-- Windows Styling -->
+    <Window.Resources>
+        
+        <!-- Button Styling -->
+        <Style TargetType="Button">
+            <Setter Property="Height" Value="50" />
+            <Setter Property="Width" Value="190" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Book Antiqua" />
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Background" Value="Transparent"></Setter>
+            <Setter Property="Foreground" Value="Black"></Setter>
+            <Setter Property="FontWeight" Value="Bold"></Setter>
+            <Setter Property="BorderThickness" Value="0"></Setter>
+        </Style>
+        
+        <!-- Label Styling -->
+        <Style TargetType="Label">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        
+    </Window.Resources>
+    
+    <!-- Main Grid -->
+    <Grid>
+        <!-- This is the layout of window -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- The left side menu -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="120"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <!-- Logo -->
+            <Label Content="FYP" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="#018081"/>
+            
+            <!-- Side Options -->
+            <StackPanel Orientation="Vertical" Grid.Row="1" Background="#018081">
+                <Button Content="Students" Margin="5,0,5,0" Command="{Binding studentSection}"/>
+                <Button Content="Advisors" Command="{Binding advisorSection}"/>
+                <Button Content="Projects" Command="{Binding projectSection}"/>
+                <Button Content="Groups" Command="{Binding groupSection}"/>
+                <Button Content="Evaluation" Command="{Binding evaluationSection}"/>
+                <Button Content="Get Reports" Command="{Binding reportSection}"/>
+            </StackPanel>
+            
+            <!-- Log Out -->
+            <Button Content="Logout" Command="{Binding logOut}" Grid.Row="1" VerticalAlignment="Bottom" Background="#20B1AA" />
+        </Grid>
+        
+
+        <!-- The main area -->
+        <Grid Grid.Row="1" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="90"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            
+            <!-- The header -->
+            <Label Content="FYP Evaluator" Grid.Row="0" Background="#20B1AA" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            
+             <!-- Upper Row -->
+            <Rectangle Fill="DarkGray" Grid.Row="1" />
+            <Label Name="lblAddress"  Content="Home" Grid.Row="1" HorizontalAlignment="Left" Margin="10,0,0,0" FontSize="12" Background="Transparent"/>
+            <Button Content="X" Grid.Row="1" Width="50" Height="20" Margin="0,0,10,0" FontSize="12" HorizontalAlignment="Right" Command="{Binding goBack}" BorderThickness="2"/>
+
+             <!-- Lower Row -->
+            <Rectangle Fill="Black" Grid.Row="3"/>
+            <Label Content="All Rights reserved." Grid.Row="3" HorizontalAlignment="Left" Margin="10,0,0,0" FontSize="15"/>
+            <Label Content="{Binding CurrentTime}" Grid.Row="3" FontSize="15" HorizontalAlignment="Right" Margin="0,0,10,0"/>
+        
+            <!-- Main Content -->
+            <WrapPanel x:Name="mainpanel" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+     
+    </Grid>
+        
+</Window>
