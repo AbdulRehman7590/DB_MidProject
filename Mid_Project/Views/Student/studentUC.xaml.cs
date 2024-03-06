@@ -8,7 +8,7 @@ namespace Mid_Project.Views
     /// </summary>
     public partial class studentUC : UserControl
     {
-        public studentUC(WrapPanel panel, Label lbl)
+        public studentUC(Grid panel, Label lbl)
         {
             InitializeComponent();
             DataContext = new StudentViewModel(panel, lbl);

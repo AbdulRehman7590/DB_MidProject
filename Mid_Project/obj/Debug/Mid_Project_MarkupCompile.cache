@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 D:\4th semester\DB_Projects\Mid_Project\Mid_Project\App.xaml
-112138103977
+17-936189881
 
-2041455182
+39-39674233
 13-1310406943
-MainWindow.xaml;Views\Advisor\AddAvisorUC.xaml;Views\Advisor\advisorUC.xaml;Views\Advisor\ManageAdvisorUC.xaml;Views\Evaluation\evaluationUC.xaml;Views\Group\groupUC.xaml;Views\Project\projectUC.xaml;Views\Reports\reportUC.xaml;Views\Student\ManageStudentsUC.xaml;Views\Student\studentUC.xaml;Views\Student\AddStudentUC.xaml;
+MainWindow.xaml;Views\Advisor\AddAvisorUC.xaml;Views\Advisor\advisorUC.xaml;Views\CommonUCs\ViewData.xaml;Views\Evaluation\AddUpdateUC.xaml;Views\Evaluation\evaluationUC.xaml;Views\Evaluation\MarkUpdateUC.xaml;Views\Group\AddGroupStudentUC.xaml;Views\Group\AddGroupUC.xaml;Views\Group\AssignProjectUC.xaml;Views\Group\groupUC.xaml;Views\Project\AddProjectAdvisorUC.xaml;Views\Project\AddProjectUC.xaml;Views\Project\projectUC.xaml;Views\Reports\reportUC.xaml;Views\Student\studentUC.xaml;Views\Student\AddStudentUC.xaml;
 
 False
 

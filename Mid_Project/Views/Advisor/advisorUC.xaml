@@ -23,8 +23,8 @@
     <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
 
         <StackPanel Orientation="Vertical">
-            <Button Content="Add Advisor"></Button>
-            <Button Content="Manage Advisor"></Button>
+            <Button Content="Add Advisor" Command="{Binding advisor}" />
+            <Button Content="Manage Advisor" Command="{Binding manageAdvisor}" />
         </StackPanel>
 
     </Grid>

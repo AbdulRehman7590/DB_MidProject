@@ -8,7 +8,7 @@ namespace Mid_Project.Views
     /// </summary>
     public partial class groupUC : UserControl
     {
-        public groupUC(WrapPanel panel, Label lbl)
+        public groupUC(Grid panel, Label lbl)
         {
             InitializeComponent();
             DataContext = new GroupViewModel(panel, lbl);

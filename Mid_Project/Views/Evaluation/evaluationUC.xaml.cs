@@ -8,7 +8,7 @@ namespace Mid_Project.Views
     /// </summary>
     public partial class evaluationUC : UserControl
     {
-        public evaluationUC(WrapPanel panel, Label lbl)
+        public evaluationUC(Grid panel, Label lbl)
         {
             InitializeComponent();
             DataContext = new EvaluationViewModel(panel, lbl);

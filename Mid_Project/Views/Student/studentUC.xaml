@@ -22,10 +22,18 @@
 
     <!-- UC Grid -->
     <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Button Content="Add Student" Command="{Binding addStudent}"/>
+            <Button Content="Manage Student" Command="{Binding manageStudents}"/>
+        </StackPanel>
 
-        <StackPanel Orientation="Vertical">
-            <Button Content="Add Student" Command="{Binding addStudent}"></Button>
-            <Button Content="Manage Student" Command="{Binding manageStudents}"></Button>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
+            <Button Content="Get Marks Sheet" Command="{Binding marksSheet}"/>
         </StackPanel>
 
     </Grid>

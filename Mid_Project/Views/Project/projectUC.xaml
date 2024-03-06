@@ -24,12 +24,13 @@
 
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Add Project"/>
-                <Button Content="View Projects"/>
+                <Button Content="Add Project" Command="{Binding addProject}"/>
+                <Button Content="View Projects" Command="{Binding viewProjects}"/>
             </StackPanel>
+            
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Add Project Advisor"/>
-                <Button Content="View Project Advisors"/>
+                <Button Content="Add Project Advisor" Command="{Binding addProjectAdvisor}"/>
+                <Button Content="View Project Advisors" Command="{Binding viewProjectAdvisors}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

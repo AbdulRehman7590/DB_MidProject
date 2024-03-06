@@ -8,7 +8,7 @@ namespace Mid_Project.Views
     /// </summary>
     public partial class reportUC : UserControl
     {
-        public reportUC(WrapPanel panel, Label lbl)
+        public reportUC(Grid panel, Label lbl)
         {
             InitializeComponent();
             DataContext = new ReportViewModel(panel, lbl);

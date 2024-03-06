@@ -1,6 +1,10 @@
 ﻿using Mid_Project.MVVM;
 using Mid_Project.Views;
 using Mid_Project.Views.Advisor;
+using Mid_Project.Views.CommonUCs;
+using Mid_Project.Views.Evaluation;
+using Mid_Project.Views.Group;
+using Mid_Project.Views.Project;
 using Mid_Project.Views.Student;
 using System;
 using System.Windows;
@@ -11,10 +15,10 @@ namespace Mid_Project.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
-        private readonly WrapPanel Panel;
+        private readonly Grid Panel;
         private readonly Label address;
         
-        public MainWindowViewModel(WrapPanel panel, Label address)
+        public MainWindowViewModel(Grid panel, Label address)
         {
             this.Panel = panel;
             this.address = address;
@@ -117,14 +121,29 @@ namespace Mid_Project.ViewModels
         {
             foreach (var child in Panel.Children)
             {
-                if (child is AddStudentUC || child is ManageStudentsUC)
+                if (child is AddStudentUC)
                 {
                     StudentSection();
                     return;
                 }
-                else if (child is AddAvisorUC || child is ManageAdvisorUC)
+                else if (child is AddAvisorUC)
                 {
                     AdvisorSection();
+                    return;
+                }
+                else if (child is AddUpdateUC || child is MarkUpdateUC)
+                {
+                    EvaluationSection();
+                    return;
+                }
+                else if (child is AddGroupStudentUC || child is AddGroupUC || child is AssignProjectUC)
+                {
+                    GroupSection();
+                    return;
+                }
+                else if (child is AddProjectUC || child is AddProjectAdvisorUC)
+                {
+                    ProjectSection();
                     return;
                 }
             }

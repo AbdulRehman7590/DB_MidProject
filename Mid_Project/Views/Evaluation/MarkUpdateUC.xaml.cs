@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Mid_Project.Views.Student
+namespace Mid_Project.Views.Evaluation
 {
     /// <summary>
-    /// Interaction logic for ManageStudentsUC.xaml
+    /// Interaction logic for MarkUpdateUC.xaml
     /// </summary>
-    public partial class ManageStudentsUC : UserControl
+    public partial class MarkUpdateUC : UserControl
     {
-        public ManageStudentsUC()
+        public MarkUpdateUC()
         {
             InitializeComponent();
         }

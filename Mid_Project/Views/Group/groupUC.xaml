@@ -24,16 +24,18 @@
 
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Make New Group"/>
-                <Button Content="View Groups"/>
+                <Button Content="Make New Group" Command="{Binding makeGroup}"/>
+                <Button Content="View Groups" Command="{Binding viewGroup}"/>
             </StackPanel>
+            
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Add Group Student"/>
-                <Button Content="View Group Students"/>
+                <Button Content="Add Group Student" Command="{Binding addGroupStudent}"/>
+                <Button Content="View Group Students" Command="{Binding viewGroupStudents}"/>
             </StackPanel>
+            
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Assign Project"/>
-                <Button Content="View Assigned Projects"/>
+                <Button Content="Assign Project" Command="{Binding assignProject}"/>
+                <Button Content="View Assigned Projects" Command="{Binding viewAssignedProjects}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

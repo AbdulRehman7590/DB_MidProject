@@ -24,12 +24,12 @@
 
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Add an Evaluation"/>
-                <Button Content="View Evaluation"/>
+                <Button Content="Add an Evaluation" Command="{Binding addEvaluation}"/>
+                <Button Content="View Evaluations" Command="{Binding viewEvaluation}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Mark an Evaluation"/>
-                <Button Content="View Marked Evaluations"/>
+                <Button Content="Mark an Evaluation" Command="{Binding markEvaluation}"/>
+                <Button Content="View Marked Evaluations" Command="{Binding viewMarkEvaluation}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

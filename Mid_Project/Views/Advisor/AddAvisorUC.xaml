@@ -5,8 +5,94 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Mid_Project.Views.Advisor"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             d:DesignHeight="450" d:DesignWidth="850">
+    
+    <UserControl.Resources>
+        
+        <!-- Label Style -->
+        <Style TargetType="Label">
+            <Setter Property="Width" Value="120"></Setter>
+            <Setter Property="Height" Value="40"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+            <Setter Property="Foreground" Value="Black"></Setter>
+            <Setter Property="Background" Value="#20B1AA"></Setter>
+            <Setter Property="FontSize" Value="20"></Setter>
+            <Setter Property="FontWeight" Value="Bold"></Setter>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Width" Value="250"></Setter>
+            <Setter Property="Height" Value="40"></Setter>
+            <Setter Property="FontSize" Value="20"></Setter>
+            <Setter Property="FontFamily" Value="Arial"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        </Style>
+
+        <!-- Combo Box Style-->
+        <Style TargetType="ComboBox">
+            <Setter Property="Width" Value="250"></Setter>
+            <Setter Property="Height" Value="40"></Setter>
+            <Setter Property="FontSize" Value="20"></Setter>
+            <Setter Property="FontFamily" Value="Arial"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        </Style>
+
+        <!-- StackPanel Style -->
+        <Style TargetType="StackPanel">
+            <Setter Property="Margin" Value="20"/>
+            <Setter Property="Orientation" Value="Horizontal"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+
+        <StackPanel Orientation="Vertical" Margin="20,20,-31,20">
             
+            <StackPanel>
+                <Label Content="Designation:"/>
+                <ComboBox x:Name="cbDesignation">
+                    <ComboBoxItem Content="Professor"/>
+                    <ComboBoxItem Content="Assistant Professor"/>
+                    <ComboBoxItem Content="Associate Professor"/>
+                    <ComboBoxItem Content="Lecturer"/>
+                    <ComboBoxItem Content="Industry Professional"/>
+                </ComboBox>
+                <Label Content="Salary" Margin="30,0,0,0"/>
+                <TextBox x:Name="txtSalary" InputScope="Number"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="First Name:"/>
+                <TextBox x:Name="txtFirstName"/>
+                <Label Content="Last Name:" Margin="30,0,0,0"/>
+                <TextBox x:Name="txtLastName"/>
+            </StackPanel>
+            
+            <StackPanel>
+                <Label Content="Contact:"/>
+                <TextBox x:Name="txtContact" InputScope="TelephoneNumber"/>
+                <Label Content="Email:" Margin="30,0,0,0"/>
+                <TextBox x:Name="txtEmail" InputScope="EmailSmtpAddress"/>
+            </StackPanel>
+            
+            <StackPanel>
+                <Label Content="DOB"/>
+                <DatePicker x:Name="txtDOB" Width="250
+                            " Height="40" InputScope="Date" FontFamily="Arial" 
+                      FontSize="25" VerticalContentAlignment="Center"/>
+                <Label Content="Gender:" Margin="30,0,0,0"/>
+                <ComboBox Name="cbGender">
+                    <ComboBoxItem Content="Male" />
+                    <ComboBoxItem Content="Female" />
+                </ComboBox>
+            </StackPanel>
+
+            <Button x:Name="btnEnter" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
+                    Width="200" Margin="20,0,20,20" Height="70" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+
+        </StackPanel>
+    
     </Grid>
 </UserControl>

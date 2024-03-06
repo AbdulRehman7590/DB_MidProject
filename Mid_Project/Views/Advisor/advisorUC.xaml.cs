@@ -8,7 +8,7 @@ namespace Mid_Project.Views.Advisor
     /// </summary>
     public partial class advisorUC : UserControl
     {
-        public advisorUC(WrapPanel panel, Label lbl)
+        public advisorUC(Grid panel, Label lbl)
         {
             InitializeComponent();
             DataContext = new AdvisorViewModel(panel, lbl);

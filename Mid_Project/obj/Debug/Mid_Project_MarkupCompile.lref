@@ -1,14 +1,20 @@
 ﻿
 
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\MainWindow.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Advisor\AddAvisorUC.xaml;;
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Advisor\advisorUC.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\CommonUCs\ViewData.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Evaluation\AddUpdateUC.xaml;;
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Evaluation\evaluationUC.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Evaluation\MarkUpdateUC.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Group\AddGroupStudentUC.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Group\AddGroupUC.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Group\AssignProjectUC.xaml;;
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Group\groupUC.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Project\AddProjectAdvisorUC.xaml;;
+FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Project\AddProjectUC.xaml;;
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Project\projectUC.xaml;;
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Reports\reportUC.xaml;;
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Student\studentUC.xaml;;
 FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Student\AddStudentUC.xaml;;
-FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Student\ManageStudentsUC.xaml;;
-FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Advisor\AddAvisorUC.xaml;;
-FD:\4th semester\DB_Projects\Mid_Project\Mid_Project\Views\Advisor\ManageAdvisorUC.xaml;;
 

@@ -9,7 +9,7 @@ namespace Mid_Project
         public MainWindow()
         {
             InitializeComponent(); 
-            DataContext = new MainWindowViewModel(mainpanel, lblAddress);
+            DataContext = new MainWindowViewModel(panel, lblAddress);
         }
     }
 }

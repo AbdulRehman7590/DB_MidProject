@@ -55,8 +55,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\AdvisorModel.cs" />
+    <Compile Include="Models\StudentModel.cs" />
     <Compile Include="MVVM\RelayCommands.cs" />
     <Compile Include="MVVM\ViewModelBase.cs" />
+    <Compile Include="Queries\advisorQueries.cs" />
+    <Compile Include="Queries\evaluationQueries.cs" />
+    <Compile Include="Queries\groupQueries.cs" />
+    <Compile Include="Queries\projectQueries.cs" />
+    <Compile Include="Queries\reportQueries.cs" />
+    <Compile Include="Queries\studentQueries.cs" />
     <Compile Include="ViewModels\AdvisorViewModel.cs" />
     <Compile Include="ViewModels\EvaluationViewModel.cs" />
     <Compile Include="ViewModels\GroupViewModel.cs" />
@@ -70,23 +78,41 @@
     <Compile Include="Views\Advisor\advisorUC.xaml.cs">
       <DependentUpon>advisorUC.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Advisor\ManageAdvisorUC.xaml.cs">
-      <DependentUpon>ManageAdvisorUC.xaml</DependentUpon>
+    <Compile Include="Views\CommonUCs\ViewData.xaml.cs">
+      <DependentUpon>ViewData.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Evaluation\AddUpdateUC.xaml.cs">
+      <DependentUpon>AddUpdateUC.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Evaluation\evaluationUC.xaml.cs">
       <DependentUpon>evaluationUC.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Evaluation\MarkUpdateUC.xaml.cs">
+      <DependentUpon>MarkUpdateUC.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Group\AddGroupStudentUC.xaml.cs">
+      <DependentUpon>AddGroupStudentUC.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Group\AddGroupUC.xaml.cs">
+      <DependentUpon>AddGroupUC.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Group\AssignProjectUC.xaml.cs">
+      <DependentUpon>AssignProjectUC.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Group\groupUC.xaml.cs">
       <DependentUpon>groupUC.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Project\AddProjectAdvisorUC.xaml.cs">
+      <DependentUpon>AddProjectAdvisorUC.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Project\AddProjectUC.xaml.cs">
+      <DependentUpon>AddProjectUC.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Project\projectUC.xaml.cs">
       <DependentUpon>projectUC.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Reports\reportUC.xaml.cs">
       <DependentUpon>reportUC.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Student\ManageStudentsUC.xaml.cs">
-      <DependentUpon>ManageStudentsUC.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Student\studentUC.xaml.cs">
       <DependentUpon>studentUC.xaml</DependentUpon>
@@ -114,7 +140,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Advisor\ManageAdvisorUC.xaml">
+    <Page Include="Views\CommonUCs\ViewData.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Evaluation\AddUpdateUC.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -122,7 +152,31 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Evaluation\MarkUpdateUC.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Group\AddGroupStudentUC.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Group\AddGroupUC.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Group\AssignProjectUC.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Group\groupUC.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Project\AddProjectAdvisorUC.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Project\AddProjectUC.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -131,10 +185,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Reports\reportUC.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Student\ManageStudentsUC.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

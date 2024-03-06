@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Mid_Project.Views.Advisor
+namespace Mid_Project.Views.Project
 {
     /// <summary>
-    /// Interaction logic for ManageAdvisorUC.xaml
+    /// Interaction logic for AddProjectUC.xaml
     /// </summary>
-    public partial class ManageAdvisorUC : UserControl
+    public partial class AddProjectUC : UserControl
     {
-        public ManageAdvisorUC()
+        public AddProjectUC()
         {
             InitializeComponent();
         }
