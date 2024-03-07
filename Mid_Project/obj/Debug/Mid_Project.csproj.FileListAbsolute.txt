@@ -45,3 +45,7 @@ D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Group\AddGro
 D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Group\AssignProjectUC.baml
 D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Project\AddProjectAdvisorUC.baml
 D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Project\AddProjectUC.baml
+D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Group\ManageGroups.g.cs
+D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Group\UpdateGroupData.g.cs
+D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Group\ManageGroups.baml
+D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\Views\Group\UpdateGroupData.baml

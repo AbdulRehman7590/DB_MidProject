@@ -1,17 +1,18 @@
-﻿<UserControl x:Class="Mid_Project.Views.CommonUCs.ViewData"
+﻿<UserControl x:Class="Mid_Project.Views.Group.UpdateGroupData"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Mid_Project.Views.CommonUCs"
+             xmlns:local="clr-namespace:Mid_Project.Views.Group"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    
     <!-- UC Resources -->
     <UserControl.Resources>
         <Style TargetType="Button">
-            <Setter Property="Width" Value="150"/>
-            <Setter Property="Height" Value="75"/>
-            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Width" Value="110"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Margin" Value="20"/>
             <Setter Property="FontFamily" Value="Arial"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="25"/>
@@ -26,15 +27,24 @@
     <!-- UC Grid -->
     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions >
+            <RowDefinition />
             <RowDefinition Height="100" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Button x:Name="btnUpdate" Content="Update" Background="#20B1AA" HorizontalAlignment="Left" />
-        <TextBlock Text="Select Any Row to perform the button operations" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
-        <Button x:Name="btnDelete" Content="Delete" Background="Red" HorizontalAlignment="Right" />
+        <DataGrid Grid.Row="0" x:Name="dgSelect" Margin="10"/>
 
-        <DataGrid Grid.Row="1" x:Name="lvTableData" Margin="10"/>
+        <Button x:Name="btnUpdate" Grid.Row="1" Background="#20B1AA" HorizontalAlignment="Left" >
+            <Path Data="M0,10 L10,10 L5,0 Z" Fill="Black" />
+        </Button>
+        
+        <TextBlock Text="Select Any Row from above table to perform the button operations" Grid.Row="1" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+        
+        <Button x:Name="btnDelete" Grid.Row="1" Background="Red" HorizontalAlignment="Right" >
+            <Path Data="M0,0 L10,0 L5,10 Z" Fill="Black"/>
+        </Button>
+
+        <DataGrid Grid.Row="2" x:Name="dgUnselect" Margin="10"/>
 
     </Grid>
 </UserControl>

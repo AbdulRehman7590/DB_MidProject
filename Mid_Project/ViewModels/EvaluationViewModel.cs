@@ -1,6 +1,10 @@
-﻿using Mid_Project.MVVM;
+﻿using Mid_Project.Models;
+using Mid_Project.MVVM;
 using Mid_Project.Views.CommonUCs;
 using Mid_Project.Views.Evaluation;
+using System.Data.SqlClient;
+using System.Data;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -46,9 +50,11 @@ namespace Mid_Project.ViewModels
         {
             if (canAddEval(eval))
             {
-                addingEvaluationInDb(eval);
-                MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
-                clearAddData(eval);
+                if (addingEvaluationInDb(eval))
+                {
+                    MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    clearAddData(eval);
+                }
             }
             else
                 MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -62,9 +68,27 @@ namespace Mid_Project.ViewModels
                 return true;
         }
 
-        private void addingEvaluationInDb(AddUpdateUC eval)
+        private bool addingEvaluationInDb(AddUpdateUC eval)
         {
+            var con = Configuration.getInstance().getConnection();
+            try
+            {
+                if (con.State == ConnectionState.Closed)
+                    con.Open();
 
+                SqlCommand cmd = new SqlCommand(@"INSERT INTO Evaluation VALUES (@Name, @TotalMarks, @TotalWeightage)", con);
+                cmd.Parameters.AddWithValue("@Name", eval.txtEvaluationName.Text);
+                cmd.Parameters.AddWithValue("@TotalMarks", eval.txtMarks.Text);
+                cmd.Parameters.AddWithValue("@TotalWeightage", eval.txtWeightage.Text);
+                cmd.ExecuteNonQuery();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
         }
 
         private void clearAddData(AddUpdateUC eval)
@@ -85,7 +109,8 @@ namespace Mid_Project.ViewModels
             eval.btnUpdate.Command = new RelayCommands(execute => UpdateEvaluation(eval), canExecute => eval.lvTableData.SelectedItem != null);
             eval.btnDelete.Command = new RelayCommands(execute => DeleteEvaluation(eval), canExecute => eval.lvTableData.SelectedItem != null);
 
-            // Data Source dena h 
+            string query = @"SELECT E.Id, E.Name, E.TotalMarks, E.TotalWeightage FROM Evaluation E";
+            Configuration.ShowData(eval.lvTableData, query);
 
             Panel.Children.Add(eval);
             address.Content = "Home -> Evaluation Section -> View Evaluations";
@@ -96,11 +121,9 @@ namespace Mid_Project.ViewModels
             Panel.Children.Clear();
             AddUpdateUC upd = new AddUpdateUC();
 
-            /*
-            upd.txtEvaluationName.Text = eval.lvTableData.SelectedItem.EvaluationName;
-            upd.txtMarks.Text = eval.lvTableData.SelectedItem.Marks;
-            upd.txtWeightage.Text = eval.lvTableData.SelectedItem.Weightage;
-            */
+            upd.txtEvaluationName.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[1].ToString();
+            upd.txtMarks.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[2].ToString();
+            upd.txtWeightage.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[3].ToString();
 
             upd.btnEnter.Content = "Update Evaluation";
             upd.btnEnter.Command = new RelayCommands(execute => UpdateE(upd));

@@ -37,6 +37,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -55,16 +56,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Models\AdvisorModel.cs" />
-    <Compile Include="Models\StudentModel.cs" />
     <Compile Include="MVVM\RelayCommands.cs" />
     <Compile Include="MVVM\ViewModelBase.cs" />
-    <Compile Include="Queries\advisorQueries.cs" />
-    <Compile Include="Queries\evaluationQueries.cs" />
-    <Compile Include="Queries\groupQueries.cs" />
-    <Compile Include="Queries\projectQueries.cs" />
-    <Compile Include="Queries\reportQueries.cs" />
-    <Compile Include="Queries\studentQueries.cs" />
     <Compile Include="ViewModels\AdvisorViewModel.cs" />
     <Compile Include="ViewModels\EvaluationViewModel.cs" />
     <Compile Include="ViewModels\GroupViewModel.cs" />
@@ -101,6 +94,12 @@
     </Compile>
     <Compile Include="Views\Group\groupUC.xaml.cs">
       <DependentUpon>groupUC.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Group\ManageGroups.xaml.cs">
+      <DependentUpon>ManageGroups.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Group\UpdateGroupData.xaml.cs">
+      <DependentUpon>UpdateGroupData.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Project\AddProjectAdvisorUC.xaml.cs">
       <DependentUpon>AddProjectAdvisorUC.xaml</DependentUpon>
@@ -172,6 +171,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Group\ManageGroups.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Group\UpdateGroupData.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Project\AddProjectAdvisorUC.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -198,7 +205,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\MConfiguration.cs" />
+    <Compile Include="MVVM\MConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

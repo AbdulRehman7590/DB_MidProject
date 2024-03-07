@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Mid_Project.Views.Group"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="580.841" d:DesignWidth="800">
 
     <UserControl.Resources>
         <!-- Label Style -->
@@ -20,45 +20,33 @@
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-
-        <!-- Combo Box Style-->
-        <Style TargetType="ComboBox">
-            <Setter Property="Width" Value="350"></Setter>
-            <Setter Property="Height" Value="42"></Setter>
-            <Setter Property="FontSize" Value="20"></Setter>
-            <Setter Property="FontFamily" Value="Arial"></Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-        </Style>
-
-        <!-- StackPanel Style -->
-        <Style TargetType="StackPanel">
-            <Setter Property="Orientation" Value="Horizontal"/>
-        </Style>
     </UserControl.Resources>
 
-    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-
-        <StackPanel Orientation="Vertical">
-
-            <StackPanel>
-                <Label Content="Project ID:"/>
-                <ComboBox x:Name="cbProjectID"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height=".7*"/>
+            <RowDefinition Height=".3*"/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Label x:Name="lblTable" Content="Projects:"/>
+            <DataGrid x:Name="dgProjects"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Label Content="Current Id:"/>
+                <Label x:Name="lbldata" />
             </StackPanel>
-
-            <StackPanel>
-                <Label Content="Group ID:"/>
-                <ComboBox x:Name="cbGroupID"/>
+            
+            <StackPanel Orientation="Horizontal">
+                <Label Content="DOB"/>
+                <DatePicker x:Name="txtDOB" Width="250" Height="40" InputScope="Date" FontFamily="Arial" 
+                    FontSize="25"/>
+                <Button x:Name="btnEnter" Content="Update" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
+                    Grid.Row="1" Width="200" Margin="75,20,20,20" Height="60" HorizontalAlignment="Right"/>
             </StackPanel>
-
-            <StackPanel>
-                <Label Content="Assignment Date:"/>
-                <DatePicker x:Name="txtdate" Width="350" Height="45" InputScope="Date" FontFamily="Arial" 
-              FontSize="28" VerticalContentAlignment="Center" />
-            </StackPanel>
-
-            <Button x:Name="btnEnter" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
-                        Width="200" Margin="20,20,10,20" Height="60" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-
         </StackPanel>
 
     </Grid>

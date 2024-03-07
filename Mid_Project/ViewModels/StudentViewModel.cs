@@ -2,7 +2,9 @@
 using Mid_Project.MVVM;
 using Mid_Project.Views.CommonUCs;
 using Mid_Project.Views.Student;
-using System.Collections.ObjectModel;
+using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -19,16 +21,6 @@ namespace Mid_Project.ViewModels
             this.address = address;
         }
 
-        /// <summary>
-        /// Student Class List //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-        /// </summary>
-        private ObservableCollection<StudentModel> studentData;
-
-        public ObservableCollection<StudentModel> StudentData
-        {
-            get { return studentData; }
-            set { studentData = value; }
-        }
 
         /// <summary>
         /// Relay commands ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +28,7 @@ namespace Mid_Project.ViewModels
         public RelayCommands addStudent => new RelayCommands(execute => Student());
         public RelayCommands manageStudents => new RelayCommands(execute => ManageStudents());
         public RelayCommands marksSheet => new RelayCommands(execute => MarksSheet());
+
 
         /// <summary>
         /// Student Add Handling /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,9 +49,11 @@ namespace Mid_Project.ViewModels
         {
             if (canAddStudent(stud))
             {
-                addingInDB(stud);
-                MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
-                clearData(stud);
+                if (addingInDB(stud))
+                {
+                    MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    clearData(stud);
+                }
             }
             else
                 MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -72,11 +67,41 @@ namespace Mid_Project.ViewModels
                 return true;
         }
         
-        private void addingInDB(AddStudentUC stud)
+        private bool addingInDB(AddStudentUC stud)
         {
+            var con = Configuration.getInstance().getConnection();
+            try
+            {
+                if (con.State == ConnectionState.Closed)
+                    con.Open();
 
+                SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION 
+                                                  INSERT INTO Person values (@FirstName, @LastName, @Contact, @Email, @DateOfBirth, @Gender)
+                                                  DECLARE @ID INT = scope_identity();
+                                                  INSERT INTO Student VALUES (@ID,@RegistrationNo)
+                                                  COMMIT TRANSACTION", con);
+                
+                cmd.Parameters.AddWithValue("@FirstName", stud.txtFirstName.Text);
+                cmd.Parameters.AddWithValue("@LastName", stud.txtLastName.Text);
+                cmd.Parameters.AddWithValue("@Contact", stud.txtContact.Text);
+                cmd.Parameters.AddWithValue("@Email", stud.txtEmail.Text);
+                cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(stud.txtDOB.SelectedDate.Value.ToString("yyyy-MM-dd")));
+                cmd.Parameters.AddWithValue("@Gender", stud.cbGender.SelectedIndex + 1);
+                cmd.Parameters.AddWithValue("@RegistrationNo", stud.txtRegNo.Text);
+                cmd.ExecuteNonQuery();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+            finally
+            {
+                con?.Close();
+            }
         }
-        
+
         private void clearData(AddStudentUC stud)
         {
             stud.txtFirstName.Text = string.Empty;
@@ -106,8 +131,13 @@ namespace Mid_Project.ViewModels
             ViewData man = new ViewData();
             man.btnUpdate.Command = new RelayCommands(execute => UpdateStudent(man), canExecute => man.lvTableData.SelectedItem != null);
             man.btnDelete.Command = new RelayCommands(execute => DeleteStudent(man), canExecute => man.lvTableData.SelectedItem != null);
-            
-            // Data Source dena h
+
+            string query = @"SELECT S.Id, RegistrationNo, FirstName, LastName, Contact, Email, DateOfBirth, Lk.Value AS Gender
+                             FROM Student S 
+                                JOIN Person P ON S.Id = P.Id
+                                JOIN Lookup Lk ON P.Gender = Lk.Id
+                             WHERE P.FirstName NOT LIKE '!!%'";
+            Configuration.ShowData(man.lvTableData, query);
 
             Panel.Children.Add(man);
             address.Content = "Home -> Student Section -> Manage Students";
@@ -117,31 +147,116 @@ namespace Mid_Project.ViewModels
         {
             Panel.Children.Clear();
             AddStudentUC stud = new AddStudentUC();
-            
-            /*
-            stud.txtFirstName.Text = man.lvStudents.SelectedItem.FirstName;
-            stud.txtLastName.Text = man.lvStudents.SelectedItem.LastName;
-            stud.txtEmail.Text = man.lvStudents.SelectedItem.Email;
-            stud.txtContact.Text = man.lvStudents.SelectedItem.Contact;
-            stud.txtDOB.Text = man.lvStudents.SelectedItem.DOB;
-            stud.txtRegNo.Text = man.lvStudents.SelectedItem.RegNo;
-            stud.cbGender.Text = man.lvStudents.SelectedItem.Gender;
-            */
+
+            stud.txtRegNo.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[1].ToString();
+            stud.txtFirstName.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString();
+            stud.txtLastName.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString();
+            stud.txtContact.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[4].ToString();
+            stud.txtEmail.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[5].ToString(); ;
+            stud.txtDOB.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[6].ToString();
+            stud.cbGender.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[7].ToString();
             
             stud.btnEnter.Content = "Update Student";
-            stud.btnEnter.Command = new RelayCommands(execute => UpdateS(stud));
+            stud.btnEnter.Command = new RelayCommands(execute => UpdateS(man,stud));
             Panel.Children.Add(stud);
             address.Content = "Home -> Student Section -> Manage Students -> Update Student";
         }
 
-        private void UpdateS(AddStudentUC stud)
+        private void UpdateS(ViewData man, AddStudentUC stud)
         {
-            
+            var con = Configuration.getInstance().getConnection();
+            SqlTransaction transaction = null;
+
+            try
+            {
+                if (con.State == ConnectionState.Closed)
+                    con.Open();
+
+                transaction = con.BeginTransaction();
+
+                SqlCommand cmd = new SqlCommand(@"UPDATE Student SET RegistrationNo = @RegistrationNo WHERE Id = @Id;
+                                                  UPDATE Person SET FirstName = @FirstName, LastName = @LastName, Contact = @Contact, 
+                                                  Email = @Email, DateOfBirth = @DateOfBirth, Gender = @Gender WHERE Id = @Id;", con, transaction);
+
+                cmd.Parameters.AddWithValue("@RegistrationNo", stud.txtRegNo.Text);
+                cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
+                cmd.Parameters.AddWithValue("@FirstName", stud.txtFirstName.Text);
+                cmd.Parameters.AddWithValue("@LastName", stud.txtLastName.Text);
+                cmd.Parameters.AddWithValue("@Contact", stud.txtContact.Text);
+                cmd.Parameters.AddWithValue("@Email", stud.txtEmail.Text);
+                cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(stud.txtDOB.SelectedDate.Value.ToString("yyyy-MM-dd")));
+                cmd.Parameters.AddWithValue("@Gender", stud.cbGender.SelectedIndex + 1);
+
+                cmd.ExecuteNonQuery();
+                transaction.Commit();
+
+                MessageBox.Show("Updated Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+                transaction?.Rollback();
+            }
+            finally
+            {
+                transaction?.Dispose();
+                con?.Close();
+                GobackToView();
+            }
         }
 
         private void DeleteStudent(ViewData man)
         {
+            if (!string.IsNullOrEmpty(((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString()))
+            {
+                var con = Configuration.getInstance().getConnection();
+                try
+                {
+                    if (con.State == ConnectionState.Closed)
+                        con.Open();
+
+                    SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION
+                                                      UPDATE Student SET RegistrationNo = @RegistrationNo WHERE Id = @Id; 
+                                                      UPDATE Person SET FirstName = @FirstName, LastName = @LastName, Contact = @Contact, 
+                                                      Email = @Email, DateOfBirth = @DateOfBirth, Gender = @Gender WHERE Id = @Id;
+                                                      COMMIT TRANSACTION", con);
+
+                    cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
+                    cmd.Parameters.AddWithValue("@RegistrationNo", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[1].ToString());
+                    cmd.Parameters.AddWithValue("@FirstName", "!!"+((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString());
+                    cmd.Parameters.AddWithValue("@LastName", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString());
+                    cmd.Parameters.AddWithValue("@Contact", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[4].ToString());
+                    cmd.Parameters.AddWithValue("@Email", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[5].ToString());
+                    cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[6].ToString()));
             
+                    if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[7].ToString() == "Male")
+                        cmd.Parameters.AddWithValue("@Gender", 1);
+                    else
+                        cmd.Parameters.AddWithValue("@Gender", 2);
+
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Deleted Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    con?.Close();
+                    GobackToView();
+                }
+            }
+            else
+                MessageBox.Show("Select Valid row!", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+
+        }
+
+        private void GobackToView()
+        {
+            Panel.Children.Clear();
+            ManageStudents();
         }
 
     }

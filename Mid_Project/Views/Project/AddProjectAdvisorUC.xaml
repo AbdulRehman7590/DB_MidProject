@@ -5,14 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Mid_Project.Views.Project"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="530" d:DesignWidth="800">
 
     <UserControl.Resources>
         <!-- Label Style -->
         <Style TargetType="Label">
             <Setter Property="Width" Value="200"/>
             <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="20"/>
+            <Setter Property="Margin" Value="20,10,10,10"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="Black"/>
@@ -23,11 +23,11 @@
 
         <!-- Combo Box Style-->
         <Style TargetType="ComboBox">
-            <Setter Property="Width" Value="350"></Setter>
-            <Setter Property="Height" Value="42"></Setter>
-            <Setter Property="FontSize" Value="20"></Setter>
+            <Setter Property="Width" Value="350"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontFamily" Value="Arial"></Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- StackPanel Style -->
@@ -36,35 +36,43 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-
-        <StackPanel Orientation="Vertical">
-
-            <StackPanel>
-                <Label Content="Project ID:"/>
-                <ComboBox x:Name="cbProjectID"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Advisor ID:"/>
-                <ComboBox x:Name="cbAdvisorID"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Advisor Role:"/>
-                <ComboBox x:Name="cbAdvisorRole"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Assignment Date:"/>
-                <DatePicker x:Name="txtdate" Width="350" Height="45" InputScope="Date" FontFamily="Arial" 
-              FontSize="28" VerticalContentAlignment="Center" />
-            </StackPanel>
-
-            <Button x:Name="btnEnter" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
-                        Width="200" Margin="20,20,10,20" Height="60" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="150"/>
+            <RowDefinition Height="150"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Grid.Row="0" >
+            <Label Content="Project ID:" HorizontalAlignment="Left"/>
+            <DataGrid x:Name="dgProject" HorizontalAlignment="Right" Margin="10"/>
         </StackPanel>
+
+        <StackPanel Grid.Row="1" >
+            <Label Content="Advisor ID:" HorizontalAlignment="Left"/>
+            <DataGrid x:Name="dgAdvisor" HorizontalAlignment="Right" Margin="10"/>
+        </StackPanel>
+
+        <StackPanel  Grid.Row="2" HorizontalAlignment="Center">
+                <Label Content="Advisor Role:"/>
+                <ComboBox x:Name="cbAdvisorRole">
+                    <ComboBoxItem Content="Main Advisor"/>
+                    <ComboBoxItem Content="Co-Advisor"/>
+                    <ComboBoxItem Content="Industry Advisor"/>
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" HorizontalAlignment="Center">
+            <Label Content="Assignment Date:"/>
+            <DatePicker x:Name="txtdate" Width="350" Height="45" InputScope="Date" FontFamily="Arial" 
+              FontSize="28" VerticalContentAlignment="Center" />
+        </StackPanel>
+
+        <Button x:Name="btnEnter" Grid.Row="4" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
+               Width="200" Margin="20,20,10,20" Height="60" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+
 
     </Grid>
 </UserControl>
