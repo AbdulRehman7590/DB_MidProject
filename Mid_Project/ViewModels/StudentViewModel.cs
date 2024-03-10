@@ -69,36 +69,32 @@ namespace Mid_Project.ViewModels
         
         private bool addingInDB(AddStudentUC stud)
         {
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
-
-                SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION 
+                    SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION 
                                                   INSERT INTO Person values (@FirstName, @LastName, @Contact, @Email, @DateOfBirth, @Gender)
                                                   DECLARE @ID INT = scope_identity();
                                                   INSERT INTO Student VALUES (@ID,@RegistrationNo)
                                                   COMMIT TRANSACTION", con);
-                
-                cmd.Parameters.AddWithValue("@FirstName", stud.txtFirstName.Text);
-                cmd.Parameters.AddWithValue("@LastName", stud.txtLastName.Text);
-                cmd.Parameters.AddWithValue("@Contact", stud.txtContact.Text);
-                cmd.Parameters.AddWithValue("@Email", stud.txtEmail.Text);
-                cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(stud.txtDOB.SelectedDate.Value.ToString("yyyy-MM-dd")));
-                cmd.Parameters.AddWithValue("@Gender", stud.cbGender.SelectedIndex + 1);
-                cmd.Parameters.AddWithValue("@RegistrationNo", stud.txtRegNo.Text);
-                cmd.ExecuteNonQuery();
+
+                    cmd.Parameters.AddWithValue("@FirstName", stud.txtFirstName.Text);
+                    cmd.Parameters.AddWithValue("@LastName", stud.txtLastName.Text);
+                    cmd.Parameters.AddWithValue("@Contact", stud.txtContact.Text);
+                    cmd.Parameters.AddWithValue("@Email", stud.txtEmail.Text);
+                    cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(stud.txtDOB.SelectedDate.Value.ToString("yyyy-MM-dd")));
+                    cmd.Parameters.AddWithValue("@Gender", stud.cbGender.SelectedIndex + 1);
+                    cmd.Parameters.AddWithValue("@RegistrationNo", stud.txtRegNo.Text);
+                    cmd.ExecuteNonQuery();
+                }
                 return true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
-            }
-            finally
-            {
-                con?.Close();
             }
         }
 
@@ -118,7 +114,17 @@ namespace Mid_Project.ViewModels
         /// </summary>
         private void MarksSheet()
         {
-            
+            string query = @"SELECT G.Id as [Group Id], S.RegistrationNo AS [Reg. No.], PR.FirstName, PR.LastName, P.Title AS [Project Title], E.TotalMarks, GE.ObtainedMarks 
+                             FROM GroupEvaluation GE 
+                                JOIN Evaluation E ON GE.EvaluationId = E.Id  
+                                JOIN [Group] G ON G.Id = GE.GroupId 
+                                JOIN GroupStudent GS ON GS.GroupId = G.Id AND GS.Status = 3 
+                                JOIN Student S ON S.Id = GS.StudentId   
+                                JOIN GroupProject GP ON GP.GroupId = GS.GroupId 
+                                JOIN Project P ON P.Id = GP.ProjectId 
+                                JOIN Person PR ON PR.Id = S.Id
+                             WHERE PR.FirstName NOT LIKE '!!%'";
+            PDFGenerator.GeneratePDF(query, "MarksSheet");
         }
 
 
@@ -164,78 +170,70 @@ namespace Mid_Project.ViewModels
 
         private void UpdateS(ViewData man, AddStudentUC stud)
         {
-            var con = Configuration.getInstance().getConnection();
-            SqlTransaction transaction = null;
-
-            try
+            using (var con = Configuration.getInstance().getConnection())
             {
-                if (con.State == ConnectionState.Closed)
-                    con.Open();
-
-                transaction = con.BeginTransaction();
-
-                SqlCommand cmd = new SqlCommand(@"UPDATE Student SET RegistrationNo = @RegistrationNo WHERE Id = @Id;
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+                try
+                {
+                    SqlCommand cmd = new SqlCommand(@"UPDATE Student SET RegistrationNo = @RegistrationNo WHERE Id = @Id;
                                                   UPDATE Person SET FirstName = @FirstName, LastName = @LastName, Contact = @Contact, 
                                                   Email = @Email, DateOfBirth = @DateOfBirth, Gender = @Gender WHERE Id = @Id;", con, transaction);
 
-                cmd.Parameters.AddWithValue("@RegistrationNo", stud.txtRegNo.Text);
-                cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
-                cmd.Parameters.AddWithValue("@FirstName", stud.txtFirstName.Text);
-                cmd.Parameters.AddWithValue("@LastName", stud.txtLastName.Text);
-                cmd.Parameters.AddWithValue("@Contact", stud.txtContact.Text);
-                cmd.Parameters.AddWithValue("@Email", stud.txtEmail.Text);
-                cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(stud.txtDOB.SelectedDate.Value.ToString("yyyy-MM-dd")));
-                cmd.Parameters.AddWithValue("@Gender", stud.cbGender.SelectedIndex + 1);
+                    cmd.Parameters.AddWithValue("@RegistrationNo", stud.txtRegNo.Text);
+                    cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
+                    cmd.Parameters.AddWithValue("@FirstName", stud.txtFirstName.Text);
+                    cmd.Parameters.AddWithValue("@LastName", stud.txtLastName.Text);
+                    cmd.Parameters.AddWithValue("@Contact", stud.txtContact.Text);
+                    cmd.Parameters.AddWithValue("@Email", stud.txtEmail.Text);
+                    cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(stud.txtDOB.SelectedDate.Value.ToString("yyyy-MM-dd")));
+                    cmd.Parameters.AddWithValue("@Gender", stud.cbGender.SelectedIndex + 1);
 
-                cmd.ExecuteNonQuery();
-                transaction.Commit();
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
 
-                MessageBox.Show("Updated Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Updated Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    transaction?.Rollback();
+                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
-                transaction?.Rollback();
-            }
-            finally
-            {
-                transaction?.Dispose();
-                con?.Close();
-                GobackToView();
-            }
+            ManageStudents();            
         }
 
         private void DeleteStudent(ViewData man)
         {
             if (!string.IsNullOrEmpty(((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString()))
             {
-                var con = Configuration.getInstance().getConnection();
                 try
                 {
-                    if (con.State == ConnectionState.Closed)
+                    using (var con = Configuration.getInstance().getConnection())
+                    {
                         con.Open();
 
-                    SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION
+                        SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION
                                                       UPDATE Student SET RegistrationNo = @RegistrationNo WHERE Id = @Id; 
                                                       UPDATE Person SET FirstName = @FirstName, LastName = @LastName, Contact = @Contact, 
                                                       Email = @Email, DateOfBirth = @DateOfBirth, Gender = @Gender WHERE Id = @Id;
                                                       COMMIT TRANSACTION", con);
 
-                    cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
-                    cmd.Parameters.AddWithValue("@RegistrationNo", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[1].ToString());
-                    cmd.Parameters.AddWithValue("@FirstName", "!!"+((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString());
-                    cmd.Parameters.AddWithValue("@LastName", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString());
-                    cmd.Parameters.AddWithValue("@Contact", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[4].ToString());
-                    cmd.Parameters.AddWithValue("@Email", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[5].ToString());
-                    cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[6].ToString()));
-            
-                    if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[7].ToString() == "Male")
-                        cmd.Parameters.AddWithValue("@Gender", 1);
-                    else
-                        cmd.Parameters.AddWithValue("@Gender", 2);
+                        cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
+                        cmd.Parameters.AddWithValue("@RegistrationNo", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[1].ToString());
+                        cmd.Parameters.AddWithValue("@FirstName", "!!" + ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString());
+                        cmd.Parameters.AddWithValue("@LastName", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString());
+                        cmd.Parameters.AddWithValue("@Contact", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[4].ToString());
+                        cmd.Parameters.AddWithValue("@Email", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[5].ToString());
+                        cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[6].ToString()));
 
-                    cmd.ExecuteNonQuery();
+                        if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[7].ToString() == "Male")
+                            cmd.Parameters.AddWithValue("@Gender", 1);
+                        else
+                            cmd.Parameters.AddWithValue("@Gender", 2);
 
+                        cmd.ExecuteNonQuery();
+                    }
                     MessageBox.Show("Deleted Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -244,19 +242,12 @@ namespace Mid_Project.ViewModels
                 }
                 finally
                 {
-                    con?.Close();
-                    GobackToView();
+                    ManageStudents();
                 }
             }
             else
                 MessageBox.Show("Select Valid row!", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
-        }
-
-        private void GobackToView()
-        {
-            Panel.Children.Clear();
-            ManageStudents();
         }
 
     }

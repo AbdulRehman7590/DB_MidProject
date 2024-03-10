@@ -1,10 +1,5 @@
-﻿using Mid_Project.MVVM;
-using Mid_Project.Views.Group;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mid_Project.Models;
+using Mid_Project.MVVM;
 using System.Windows.Controls;
 
 namespace Mid_Project.ViewModels
@@ -28,7 +23,6 @@ namespace Mid_Project.ViewModels
         public RelayCommands report2 => new RelayCommands(execute => Report2());
         public RelayCommands report3 => new RelayCommands(execute => Report3());
         public RelayCommands report4 => new RelayCommands(execute => Report4());
-        public RelayCommands report5 => new RelayCommands(execute => Report5());
 
 
 
@@ -37,16 +31,35 @@ namespace Mid_Project.ViewModels
         /// </summary>
         private void Report1()
         {
-
+            string query = @"SELECT PA.ProjectId AS PID, 
+                                 MAX(P.Title) AS Title, 
+                                 MAX(CASE WHEN PA.AdvisorRole = 11 THEN A.Id END) AS MainAdvisorId,
+                                 MAX(CASE WHEN PA.AdvisorRole = 11 THEN CONCAT(Pers.FirstName, ' ', Pers.LastName) END) AS MainAdvisor,
+                                 MAX(CASE WHEN PA.AdvisorRole = 12 THEN A.Id END) AS CoAdvisorId, 
+                                 MAX(CASE WHEN PA.AdvisorRole = 12 THEN CONCAT(Pers.FirstName, ' ', Pers.LastName) END) AS CoAdvisor, 
+                                 MAX(CASE WHEN PA.AdvisorRole = 14 THEN A.Id END) AS IndustryAdvisorId,
+                                 MAX(CASE WHEN PA.AdvisorRole = 14 THEN CONCAT(Pers.FirstName, ' ', Pers.LastName) END) AS IndustryAdvisor
+                             FROM ProjectAdvisor PA 
+                                 INNER JOIN Advisor A ON PA.AdvisorId = A.Id 
+                                 JOIN Project P ON P.Id = PA.ProjectId 
+                                 JOIN Person Pers ON Pers.Id = A.Id
+                             WHERE Pers.FirstName NOT LIKE '!!%'
+                             GROUP BY PA.ProjectId";
+            PDFGenerator.GeneratePDF(query, "Project Advisors");
         }
-
+        
 
         /// <summary>
         /// Report No. 2 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// </summary>
         private void Report2()
         {
-            
+            string query = @"SELECT A.Id, P.FirstName, P.LastName, L.Value AS [Designation], P.Email, P.Contact , A.Salary 
+                           FROM Advisor A 
+                              JOIN Person P ON A.Id = P.Id 
+                              JOIN Lookup L on A.Designation = L.Id
+                           WHERE P.FirstName NOT LIKE '!!%'";
+            PDFGenerator.GeneratePDF(query, "Advisor Details");
         }
 
 
@@ -55,7 +68,12 @@ namespace Mid_Project.ViewModels
         /// </summary>
         private void Report3()
         {
-            
+            string query = @"SELECT S.RegistrationNo, P.FirstName, P.LastName, L.Value AS [Gender], P.Contact, P.Email, P.DateOfBirth 
+                             FROM Student S 
+                                JOIN Person P ON S.Id = P.Id 
+                                JOIN Lookup L on P.Gender = L.Id
+                             WHERE P.FirstName NOT LIKE '!!%'";
+            PDFGenerator.GeneratePDF(query, "Student Details");
         }
 
 
@@ -64,16 +82,15 @@ namespace Mid_Project.ViewModels
         /// </summary>
         private void Report4()
         {
-            
-        }
-
-
-        /// <summary>
-        /// Report No. 5 ///////////////////////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        private void Report5()
-        {
-            
+            string query = @"SELECT Prj.id AS ProjectID, Prj.Title, G.Id AS GroupID, S.RegistrationNo, P.FirstName, P.LastName, P.Contact, (SELECT Value FROM Lookup L WHERE P.Gender = L.Id) AS Gender
+                             FROM Project Prj
+                             	JOIN GroupProject GP ON GP.GroupId = Prj.Id
+                             	JOIN [Group] G ON GP.GroupId = G.Id
+                             	JOIN GroupStudent GS ON GS.GroupId =G.Id
+                             	JOIN Student S ON GS.StudentId = S.Id
+                             	JOIN Person P ON P.Id = S.Id
+                             WHERE P.FirstName NOT LIKE '!!%' AND GS.Status = (SELECT Id FROM Lookup Lk WHERE Value = 'Active')";
+            PDFGenerator.GeneratePDF(query, "Project Students");
         }
 
     }

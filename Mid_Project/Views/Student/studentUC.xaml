@@ -33,7 +33,7 @@
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-            <Button Content="Get Marks Sheet" Command="{Binding marksSheet}"/>
+            <Button Content="Get Marks Sheet" Command="{Binding marksSheet}" Background="DarkCyan"/>
         </StackPanel>
 
     </Grid>

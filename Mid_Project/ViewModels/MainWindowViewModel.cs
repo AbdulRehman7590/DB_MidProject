@@ -9,6 +9,7 @@ using Mid_Project.Views.Student;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace Mid_Project.ViewModels
@@ -136,7 +137,7 @@ namespace Mid_Project.ViewModels
                     EvaluationSection();
                     return;
                 }
-                else if (child is AddGroupStudentUC || child is AddGroupUC || child is AssignProjectUC)
+                else if (child is AddGroupUC || child is AssignProjectUC || child is ManageGroups || child is UpdateGroupData)
                 {
                     GroupSection();
                     return;
@@ -149,6 +150,10 @@ namespace Mid_Project.ViewModels
             }
 
             Panel.Children.Clear();
+            Image img = new Image();
+            img.Source = new BitmapImage(new Uri("Images/fyp.png", UriKind.RelativeOrAbsolute));
+            Panel.Children.Add(img);
+
             address.Content = "Home";
         }
 

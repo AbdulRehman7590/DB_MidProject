@@ -34,7 +34,7 @@
         <TextBlock Text="Select Any Row to perform the button operations" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
         <Button x:Name="btnDelete" Content="Delete" Background="Red" HorizontalAlignment="Right" />
 
-        <DataGrid Grid.Row="1" x:Name="lvTableData" Margin="10"/>
+        <DataGrid Grid.Row="1" x:Name="lvTableData" Margin="10" IsReadOnly="True"/>
 
     </Grid>
 </UserControl>

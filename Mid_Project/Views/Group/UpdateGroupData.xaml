@@ -15,13 +15,18 @@
             <Setter Property="Margin" Value="20"/>
             <Setter Property="FontFamily" Value="Arial"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="25"/>
-        </Style>
-        <Style TargetType="TextBlock">
-            <Setter Property="Height" Value="45"/>
-            <Setter Property="FontFamily" Value="Arial"/>
             <Setter Property="FontSize" Value="20"/>
         </Style>
+        
+        <Style TargetType="TextBlock">
+            <Setter Property="Height" Value="auto"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Width" Value="450"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
     </UserControl.Resources>
 
     <!-- UC Grid -->
@@ -32,19 +37,17 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <DataGrid Grid.Row="0" x:Name="dgSelect" Margin="10"/>
+        <DataGrid Grid.Row="0" x:Name="dgSelect" Margin="10" IsReadOnly="True"/>
 
-        <Button x:Name="btnUpdate" Grid.Row="1" Background="#20B1AA" HorizontalAlignment="Left" >
-            <Path Data="M0,10 L10,10 L5,0 Z" Fill="Black" />
-        </Button>
-        
-        <TextBlock Text="Select Any Row from above table to perform the button operations" Grid.Row="1" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
-        
-        <Button x:Name="btnDelete" Grid.Row="1" Background="Red" HorizontalAlignment="Right" >
-            <Path Data="M0,0 L10,0 L5,10 Z" Fill="Black"/>
-        </Button>
+        <Button x:Name="btnUpdate" Content="Add" Grid.Row="1" Background="#20B1AA" HorizontalAlignment="Left" />
 
-        <DataGrid Grid.Row="2" x:Name="dgUnselect" Margin="10"/>
+        <TextBlock Text="Select Any Row from above table to Inactive and from below to add" Grid.Row="1"
+                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+        <Button x:Name="btnDelete" Content="In-Active" Grid.Row="1" Background="Red" HorizontalAlignment="Right" />
+
+
+        <DataGrid Grid.Row="2" x:Name="dgUnselect" Margin="10" IsReadOnly="True"/>
 
     </Grid>
 </UserControl>

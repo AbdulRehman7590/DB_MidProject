@@ -2,17 +2,11 @@
 using Mid_Project.MVVM;
 using Mid_Project.Views.CommonUCs;
 using Mid_Project.Views.Group;
-using Mid_Project.Views.Project;
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace Mid_Project.ViewModels
 {
@@ -33,7 +27,7 @@ namespace Mid_Project.ViewModels
         /// </summary>
         public RelayCommands makeGroup => new RelayCommands(execute => MakeGroup());
         public RelayCommands viewGroup => new RelayCommands(execute => ViewGroup());
-        
+        public RelayCommands addGroupProject => new RelayCommands(execute => AddGroupProject());
 
 
         /// <summary>
@@ -53,11 +47,11 @@ namespace Mid_Project.ViewModels
 
         private void MakeGrp(AddGroupUC grp)
         {
-            if (canAddGrp(grp))
+            if (!string.IsNullOrEmpty(grp.txtdate.Text))
             {
                 if (addingGroupInDb(grp))
                 {
-                    MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Group Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
                     clearGroupData(grp);
                 }
             }
@@ -65,26 +59,18 @@ namespace Mid_Project.ViewModels
                 MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        private bool canAddGrp(AddGroupUC grp)
-        {
-            if (string.IsNullOrEmpty(grp.txtdate.Text))
-                return false;
-            else
-                return true;
-        }
-
         private bool addingGroupInDb(AddGroupUC grp)
         {
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
 
-                SqlCommand cmd = new SqlCommand(@"INSERT INTO Group VALUES (@Created_On)", con);
-                cmd.Parameters.AddWithValue("@FirstName", grp.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
-                cmd.ExecuteNonQuery();
-                
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO [Group] VALUES (@Created_On)", con);
+                    cmd.Parameters.AddWithValue("@Created_On", grp.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
+                    cmd.ExecuteNonQuery();
+                }
                 return true;
             }
             catch (Exception ex)
@@ -107,40 +93,111 @@ namespace Mid_Project.ViewModels
         {
             Panel.Children.Clear();
             ManageGroups grp = new ManageGroups();
-
-            grp.btnUpdatePrj.Command = new RelayCommands(execute => UpdateGroupProject(grp), canExecute => grp.dgTableData.SelectedItem != null);
-            grp.btnUpdateStu.Command = new RelayCommands(execute => UpdateGroupStudent(grp), canExecute => grp.dgTableData.SelectedItem != null);
-            grp.btnAddEvaluation.Command = new RelayCommands(execute => AddEvaluation(grp), canExecute => grp.dgTableData.SelectedItem != null);
-            grp.btnDelete.Command = new RelayCommands(execute => DeleteGroup(grp), canExecute => grp.dgTableData.SelectedItem != null);
-
-            string query = @"SELECT G.Id, G.Created_On, GP.ProjectId, Prj.Title, GE.EvaluationId, COUNT(GS.StudentId) AS NumberOfStudents
-                             FROM GroupStudent GS
-                             	JOIN [Group] G ON GS.GroupId = G.Id
-                             	JOIN GroupProject GP ON GP.GroupId = G.Id
-                             	JOIN Project Prj ON GP.ProjectId = Prj.Id
-                             	JOIN GroupEvaluation GE ON GE.GroupId = G.Id
-                             GROUP BY G.Id, G.Created_On, GP.ProjectId, Prj.Title, GE.EvaluationId";
+            
+            string query = @"SELECT G.Id, G.Created_On, GP.ProjectId, Prj.Title, GP.AssignmentDate, GE.EvaluationId, GE.EvaluationDate, E.Name, 
+                             	COALESCE(StudentCount.NumberOfActiveStudents, 0) AS NumberOfStudents
+                             FROM [Group] G
+                                 INNER JOIN GroupProject GP ON GP.GroupId = G.Id
+                                 LEFT JOIN Project Prj ON GP.ProjectId = Prj.Id
+                                 LEFT JOIN GroupEvaluation GE ON GE.GroupId = G.Id
+                                 LEFT JOIN Evaluation E ON GE.EvaluationId = E.Id
+                                 LEFT JOIN ( SELECT GS.GroupId, COUNT(*) AS NumberOfActiveStudents
+                             				FROM GroupStudent GS INNER JOIN Lookup L ON GS.Status = L.Id
+                             				WHERE L.Value = 'Active' GROUP BY GS.GroupId
+                             				) AS StudentCount ON StudentCount.GroupId = G.Id";
             Configuration.ShowData(grp.dgTableData, query);
+
+            grp.btnUpdatePrj.Command = new RelayCommands(execute => UpdateGroupProject(grp), canExecute => checkStuCount(grp));
+            grp.btnUpdateStu.Command = new RelayCommands(execute => UpdateGroupStudent(grp), canExecute => grp.dgTableData.SelectedItem != null);
+            grp.btnAddEvaluation.Command = new RelayCommands(execute => AddEvaluation(grp), canExecute => checkStuCount(grp));
 
             Panel.Children.Add(grp);
             address.Content = "Home -> Group Section -> View Groups";
+        }
+        
+        private bool checkStuCount(ManageGroups grp)
+        {
+            if (grp.dgTableData.SelectedItem != null)
+            {
+                DataRowView selectedRow = (DataRowView)grp.dgTableData.SelectedItem;
+                string numberOfStudents = selectedRow.Row["NumberOfStudents"].ToString();
+                return !string.IsNullOrEmpty(numberOfStudents) && int.Parse(numberOfStudents) > 0;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Add Group Project ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// </summary>
+        private void AddGroupProject()
+        {
+            Panel.Children.Clear();
+            ViewData grp = new ViewData();
+
+            string query = @"SELECT G.Id, G.Created_On
+                             FROM [Group] G
+                             LEFT JOIN GroupProject GP ON G.Id = GP.GroupId
+                             WHERE GP.ProjectId IS NULL";
+            Configuration.ShowData(grp.lvTableData, query);
+
+            grp.btnDelete.Visibility = Visibility.Hidden;
+            grp.btnUpdate.Visibility = Visibility.Hidden;
+
+            grp.lvTableData.MouseDoubleClick += (sender, e) => AssignGroupProject(grp);
+
+            Panel.Children.Add(grp);
+            address.Content = "Home -> Group Section -> View Groups";
+        }
+
+        private void AssignGroupProject(ViewData table)
+        {
+            Panel.Children.Clear();
+            AssignProjectUC prj = new AssignProjectUC();
+
+            string gID = ((DataRowView)table.lvTableData.SelectedItem).Row.ItemArray[0].ToString();
+
+            var con = Configuration.getInstance().getConnection();
+            con.Open();
+            SqlCommand cmd = new SqlCommand(@"SELECT Id, Title, Description FROM Project P WHERE Title NOT LIKE '!!%'", con);
+            cmd.Parameters.AddWithValue("@gid", gID);
+            Configuration.ShowData(prj.dgProjects, cmd);
+            
+            prj.lbldata.Visibility = Visibility.Hidden;
+            prj.lblcurrent.Visibility = Visibility.Hidden;
+            prj.btnDelete.Visibility = Visibility.Hidden;
+
+            prj.btnEnter.Content = "Assign Project";
+            prj.btnEnter.Command = new RelayCommands(execute => UpdateGProject(prj, gID), canExecute => prj.dgProjects.SelectedItem != null && prj.txtdate.Text != null);
+
+            Panel.Children.Add(prj);
+            address.Content = "Home -> Group Section -> View Groups -> Assign Group Project";
         }
 
 
         /// <summary>
         /// Updating the group Project ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// </summary>
-        private void UpdateGroupProject(ManageGroups table)
+        private void UpdateGroupProject(ManageGroups grp)
         {
             Panel.Children.Clear();
             AssignProjectUC prj = new AssignProjectUC();
 
-            string query = @"SELECT Id, Title, Description FROM Project";
-            Configuration.ShowData(prj.dgProjects, query);
-            
-            prj.lbldata.Content = ((DataRowView)table.dgTableData.SelectedItem).Row.ItemArray[4].ToString();
-            string gID = ((DataRowView)table.dgTableData.SelectedItem).Row.ItemArray[0].ToString();
+            string gID = ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[0].ToString();
+
+            using (var con = Configuration.getInstance().getConnection())
+            {
+                con.Open();
+                string query = @"SELECT Id, Title, Description 
+                                 FROM Project P
+                                    LEFT JOIN GroupProject GP ON P.id = GP.ProjectId
+                                 WHERE GP.ProjectId IS NULL AND P.Title NOT LIKE '!!%'";
+                Configuration.ShowData(prj.dgProjects, query);
+            }
+            prj.lbldata.Content = ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[3].ToString();
+            prj.txtdate.Text = ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[4].ToString();
+
             prj.btnEnter.Command = new RelayCommands(execute => UpdateGProject(prj, gID), canExecute => prj.dgProjects.SelectedItem != null);
+            prj.btnDelete.Command = new RelayCommands(execute => DeleteGProject(gID));
 
             Panel.Children.Add(prj);
             address.Content = "Home -> Group Section -> View Groups -> Update Group Project";
@@ -148,34 +205,66 @@ namespace Mid_Project.ViewModels
 
         private void UpdateGProject(AssignProjectUC prj, string id)
         {
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
 
-                SqlCommand cmd = new SqlCommand(@"UPDATE GroupProject SET ProjectId = @ProjectId, AssignmentDate = @AssignmentDate WHERE GroupId = @GroupId", con);
-                cmd.Parameters.AddWithValue("@GroupId", id);
-                cmd.Parameters.AddWithValue("@AssignmentDate", prj.txtDOB.SelectedDate.Value.ToString("yyyy-MM-dd"));
-                cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)prj.dgProjects.SelectedItem).Row.ItemArray[0].ToString());
-                cmd.ExecuteNonQuery();
+                    if (prj.btnEnter.Content.ToString() == "Assign Project")
+                    {
+                        SqlCommand cmd = new SqlCommand(@"INSERT INTO GroupProject VALUES (@ProjectId, @GroupId, @AssignmentDate)", con);
+                        cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)prj.dgProjects.SelectedItem).Row.ItemArray[0].ToString());
+                        cmd.Parameters.AddWithValue("@GroupId", id);
+                        cmd.Parameters.AddWithValue("@AssignmentDate", prj.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
 
+                        cmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        SqlCommand cmd = new SqlCommand(@"UPDATE GroupProject SET ProjectId = @ProjectId, AssignmentDate = @AssignmentDate WHERE GroupId = @GroupId", con);
+                        cmd.Parameters.AddWithValue("@GroupId", id);
+                        cmd.Parameters.AddWithValue("@AssignmentDate", prj.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)prj.dgProjects.SelectedItem).Row.ItemArray[0].ToString());
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
                 MessageBox.Show("Data updated successfully!!!", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                ViewGroup();
+            }
         }
 
-
-        /// <summary>
-        /// Delete Group //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        private void DeleteGroup(ManageGroups grp)
+        private void DeleteGProject(string id)
         {
-
+            try
+            {
+                using (var con = Configuration.getInstance().getConnection())
+                {
+                    con.Open();
+                    SqlCommand cmd = new SqlCommand(@"DELETE FROM GroupProject WHERE GroupId = @GroupId", con);
+                    cmd.Parameters.AddWithValue("@GroupId", id);
+                    cmd.ExecuteNonQuery();
+                }
+                MessageBox.Show("Data updated successfully!!!", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ViewGroup();
+            }
         }
+
 
 
         /// <summary>
@@ -186,41 +275,59 @@ namespace Mid_Project.ViewModels
             Panel.Children.Clear();
             AssignProjectUC eval = new AssignProjectUC();
 
+            string gId = ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[0].ToString();
+            
             eval.lblTable.Content = "Evaluations: ";
-            eval.lbldata.Content = ((DataRowView)eval.dgProjects.SelectedItem).Row.ItemArray[5].ToString();
+            eval.txtdate.Visibility = Visibility.Hidden;
+            eval.lbldata.Visibility = Visibility.Hidden;
+            eval.lblcurrent.Visibility = Visibility.Hidden;
+            eval.btnDelete.Visibility = Visibility.Hidden;
+            eval.lbldate.Visibility = Visibility.Hidden;
 
-            string query = @"SELECT * FROM Evaluation";
-            Configuration.ShowData(eval.dgProjects, query);
-
-            string gId = ((DataRowView)eval.dgProjects.SelectedItem).Row.ItemArray[0].ToString();
+            eval.btnEnter.Margin = new Thickness(75,10,10,50);
             eval.btnEnter.Command = new RelayCommands(execute => AddEval(eval, gId), canExecute => eval.dgProjects.SelectedItem != null);
 
+            var con = Configuration.getInstance().getConnection();
+            con.Open();
+            SqlCommand cmd = new SqlCommand(@"SELECT E.Id, E.Name, E.TotalMarks, E.TotalWeightage 
+                                      FROM Evaluation E 
+                                          LEFT JOIN GroupEvaluation GE ON E.id = GE.EvaluationId AND GE.GroupId = @gid
+                                      WHERE GE.GroupId IS NULL AND E.Name NOT LIKE '!!%'", con);
+            cmd.Parameters.AddWithValue("@gid", gId);
+            Configuration.ShowData(eval.dgProjects, cmd);
+            
             Panel.Children.Add(eval);
             address.Content = "Home -> Group Section -> View Groups -> Add Evaluation";
         }
 
-        private void AddEval(AssignProjectUC eval,  string gId)
+        private void AddEval(AssignProjectUC eval, string gId)
         {
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
 
-                //SqlCommand cmd = new SqlCommand(@"INSERT INTO GroupEvaluation VALUES (@GroupId, @EvaluationId, @ObtainedMarks, @EvaluationDate)", con);
-                //cmd.Parameters.AddWithValue("@GroupId", gId);
-                //cmd.Parameters.AddWithValue("@EvaluationId", );
-                //cmd.Parameters.AddWithValue("@ObtainedMarks", 0);
-                //cmd.Parameters.AddWithValue("@EvaluationDate", );
-                //cmd.ExecuteNonQuery();
-
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO GroupEvaluation VALUES (@GroupId, @EvaluationId, @ObtainedMarks, @EvaluationDate)", con);
+                    cmd.Parameters.AddWithValue("@GroupId", gId);
+                    cmd.Parameters.AddWithValue("@EvaluationId", ((DataRowView)eval.dgProjects.SelectedItem).Row.ItemArray[0].ToString());
+                    cmd.Parameters.AddWithValue("@ObtainedMarks", 0);
+                    cmd.Parameters.AddWithValue("@EvaluationDate", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
                 MessageBox.Show("Data updated successfully!!!", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                ViewGroup();
+            }
         }
+
+       
 
         /// <summary>
         /// Updating Group Students ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,241 +335,137 @@ namespace Mid_Project.ViewModels
         private void UpdateGroupStudent(ManageGroups grp)
         {
             Panel.Children.Clear();
-            AddGroupStudentUC grpS = new AddGroupStudentUC();
+            UpdateGroupData grpS = new UpdateGroupData();
 
-            var con = Configuration.getInstance().getConnection();
-            if (con.State == ConnectionState.Closed)
-                con.Open();
-            SqlCommand cmd = new SqlCommand(@"SELECT GS.StudentId, S.RegistrationNo, P.FirstName, P.LastName, P.Contact, Lk.Value, (SELECT Value FROM Lookup WHERE GS.Status = Lookup.Id) AS Status, GS.AssignmentDate
-                                              FROM GroupStudent GS
-                                              	JOIN Student S ON GS.StudentId = S.Id
-                                              	JOIN Person P ON S.Id = P.Id
-                                                JOIN Lookup Lk ON P.Gender = Lk.Id
-                                              WHERE GS.StudentId = @GrpID", con);
-            cmd.Parameters.AddWithValue("@GrpID", ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[0].ToString());
-            Configuration.ShowData(grpS.dgStudents, cmd);
+            string gid = ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[0].ToString();
+            RefreshPageData(grpS, gid);
 
-            grpS.btnEnter.Command = new RelayCommands(execute => UpdateGS(grpS), canExecute => grpS.dgStudents.SelectedItem != null);
+            grpS.btnUpdate.Command = new RelayCommands(execute => UpdateGS(grpS, gid), canExecute => grpS.dgUnselect.SelectedItem != null);
+            grpS.btnDelete.Command = new RelayCommands(execute => DeleteGS(grpS, gid), canExecute => grpS.dgSelect.SelectedItem != null);
 
             Panel.Children.Add(grpS);
             address.Content = "Home -> Group Section -> View Groups -> Update Group Students";
         }
 
-        private void UpdateGS(AddGroupStudentUC grpS)
+        private void DeleteGS(UpdateGroupData grp, string gid)
         {
-            grpS.cbStatus.Text = ((DataRowView)grpS.dgStudents.SelectedItem).Row.ItemArray[6].ToString();
-            grpS.txtdate.Text = ((DataRowView)grpS.dgStudents.SelectedItem).Row.ItemArray[7].ToString();
-
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
-
-                SqlCommand cmd = new SqlCommand(@"Update GroupStudent SET Status = @Status, AssignmentDate = @AssignmentDate WHERE StudentId = @StudentId",con);
-                cmd.Parameters.AddWithValue("@StudentId", ((DataRowView)grpS.dgStudents.SelectedItem).Row.ItemArray[0].ToString());
-                cmd.Parameters.AddWithValue("@Status", grpS.cbStatus.SelectedIndex + 3);
-                cmd.Parameters.AddWithValue("@AssignmentDate", grpS.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
-                cmd.ExecuteNonQuery();
-
+                    SqlCommand cmd = new SqlCommand(@"UPDATE GroupStudent SET Status = @Status WHERE GroupId = @GroupId AND StudentId = @StudentId", con);
+                    cmd.Parameters.AddWithValue("@Status", 4);
+                    cmd.Parameters.AddWithValue("@GroupId", gid);
+                    cmd.Parameters.AddWithValue("@StudentId", ((DataRowView)grp.dgSelect.SelectedItem).Row.ItemArray[0].ToString());
+                    cmd.ExecuteNonQuery();
+                }
                 MessageBox.Show("Data updated successfully!!!", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error: {ex.Message}", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-
-
-
-        /// <summary>
-        /// View Assigned Projects ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        private void UpdateAssignedProjects(ManageGroups grp)
-        {
-            Panel.Children.Clear();
-            ViewData grpAp = new ViewData();
-            grpAp.btnUpdate.Command = new RelayCommands(execute => UpdateAP(grpAp), canExecute => grpAp.lvTableData.SelectedItem != null);
-            grpAp.btnDelete.Command = new RelayCommands(execute => DeleteAssignProject(grpAp), canExecute => grpAp.lvTableData.SelectedItem != null);
-
-            // Data Source dena h 
-
-            Panel.Children.Add(grpAp);
-            address.Content = "Home -> Group Section -> View Assigned Projects";
-        }
-
-        private void UpdateAP(ViewData grp)
-        {
-            Panel.Children.Clear();
-            AssignProjectUC grpAp = new AssignProjectUC();
-
-            /*
-            grpAp.cbGroupID.Text = grp.lvTableData.SelectedItem.GroupID.ToString();
-            grpAp.cbProjectID.Text = grp.lvTableData.SelectedItem.ProjectID.ToString();
-            grpAp.txtdate.Text = grp.lvTableData.SelectedItem.AssignmentDate.ToString();
-            */
-
-            grpAp.btnEnter.Content = "Update Project";
-            grpAp.btnEnter.Command = new RelayCommands(execute => UpdateAP(grpAp));
-
-            Panel.Children.Add(grpAp);
-            address.Content = "Home -> Group Section -> View Assigned Projects -> Update";
-        }
-
-        private void UpdateAP(AssignProjectUC prj)
-        {
-
-        }
-
-        private void DeleteAssignProject(ViewData grp)
-        {
-
-        }
-
-        /*
-
-        /// <summary>
-        /// Add Student in Group /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        private void AddGroupStudent(ManageGroups grp)
-        {
-            Panel.Children.Clear();
-            UpdateGroupData grpS = new UpdateGroupData();
-
-            var con = Configuration.getInstance().getConnection();
-            if (con.State == ConnectionState.Closed)
-                con.Open();
-            SqlCommand cmd = new SqlCommand(@"SELECT GS.StudentId, S.RegistrationNo, P.FirstName, P.LastName, P.Contact, Lk.Value 
-                                              FROM GroupStudent GS
-                                              	JOIN Student S ON GS.StudentId = S.Id
-                                              	JOIN Person P ON S.Id = P.Id
-                                                JOIN Lookup Lk ON P.Gender = Lk.Id
-                                              WHERE GS.StudentId = @GrpID", con);
-            cmd.Parameters.AddWithValue("@GrpID", ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[0].ToString());
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            grpS.dgSelect.ItemsSource = dt.DefaultView;
-
-            string query = @"SELECT S.Id, S.RegistrationNo, P.FirstName, P.LastName, P.Contact, Lk.Value 
-                                               FROM GroupStudent GS
-                                                  RIGHT JOIN Student S ON GS.StudentId = S.Id
-                                                  JOIN Person P ON S.Id = P.Id
-                                                  JOIN Lookup Lk ON P.Gender = Lk.Id
-                                               WHERE GS.GroupId IS NULL";
-            Configuration.ShowData(grpS.dgUnselect, query);
-
-            grpS.btnUpdate.Command = new RelayCommands(execute => UpdateGS(grpS, grp), canExecute => grpS.dgUnselect.SelectedItem != null);
-            grpS.btnDelete.Command = new RelayCommands(execute => DeleteGS(grpS, grp), canExecute => grpS.dgSelect.SelectedItem != null);
-
-
-            Panel.Children.Add(grp);
-            address.Content = "Home -> Group Section -> Add Student in Group";
-        }
-
-        private void AddGS(AddGroupStudentUC grp)
-        {
-            if (canAddGS(grp))
+            finally
             {
-                if (addingGSInDb(grp))
-                {
-                    MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    clearGSData(grp);
-                }
+                RefreshPageData(grp, gid);
             }
-            else
-                MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        private bool canAddGS(AddGroupStudentUC grp)
+        private void UpdateGS(UpdateGroupData grpS, string gid)
         {
-            if (string.IsNullOrEmpty(grp.txtdate.Text) || string.IsNullOrEmpty(grp.cbGroupID.Text) || string.IsNullOrEmpty(grp.cbStudentID.Text) || string.IsNullOrEmpty(grp.cbStatus.Text))
-                return false;
-            else
-                return true;
-        }
-
-        private bool addingGSInDb(AddGroupStudentUC grp)
-        {
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
+                    con.Open();
+                    if (isGroupFree(gid))
+                    {
+                        SqlCommand cmd = new SqlCommand(@"INSERT INTO GroupStudent VALUES (@GroupId, @StudentId, @Status, @AssignmentDate)", con);
+                        cmd.Parameters.AddWithValue("@GroupId", gid);
+                        cmd.Parameters.AddWithValue("@StudentId", ((DataRowView)grpS.dgUnselect.SelectedItem).Row.ItemArray[0].ToString());
+                        cmd.Parameters.AddWithValue("@Status", 3);
+                        cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now.Date);
+                        cmd.ExecuteNonQuery();
+                    }
+                    else
+                        MessageBox.Show("Group is already full!!!", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                MessageBox.Show("Data updated successfully!!!", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                RefreshPageData(grpS, gid);
+            }
+        }
+
+        private bool isGroupFree(string gId)
+        {
+            int studentCount = 0;
+            using (var con = Configuration.getInstance().getConnection())
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("SELECT COUNT(Status) FROM GroupStudent JOIN Lookup Lk ON Status = Lk.Id WHERE GroupId = @GroupId AND Lk.Value = 'Active'", con);
+                cmd.Parameters.AddWithValue("@GroupId", gId);
+                studentCount = (int)cmd.ExecuteScalar();
+            }
+            return studentCount < 4;
+        }
+
+        private void RefreshPageData(UpdateGroupData grp, string gid)
+        {
+            try
+            {
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
 
-                SqlCommand cmd = new SqlCommand(@"INSERT INTO GroupStudent VALUES (@GroupId, @StudentId, @Status, @AssignmentDate)", con);
-                cmd.Parameters.AddWithValue("@GroupId", ((DataRowView)grp.dgGroups.SelectedItem).Row.ItemArray[].ToString());
-                cmd.Parameters.AddWithValue("@StudentId", ((DataRowView)grp.dgGroups.SelectedItem).Row.ItemArray[].ToString());
-                cmd.Parameters.AddWithValue("@Status", grp.cbStatus.SelectedIndex + 3);
-                cmd.Parameters.AddWithValue("@AssignmentDate", eval.txtTitle.Text);
-                cmd.ExecuteNonQuery();
+                    grp.dgSelect.ItemsSource = GetGroupStudentData(con, gid, true).DefaultView;
 
-                return true;
+                    grp.dgUnselect.ItemsSource = GetGroupStudentData(con, gid, false).DefaultView;
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
             }
         }
 
-        private void clearGSData(AddGroupStudentUC grp)
+        private DataTable GetGroupStudentData(SqlConnection con, string gid, bool isActive)
         {
-            grp.cbGroupID.Text = string.Empty;
-            grp.cbStudentID.Text = string.Empty;
-            grp.cbStatus.Text = string.Empty;
-            grp.txtdate.Text = string.Empty;
-        }
+            string query = isActive ?
+                @"SELECT GS.StudentId, S.RegistrationNo, P.FirstName, P.LastName, P.Contact, Lk.Value AS Gender, L2.Value AS Status, GS.AssignmentDate
+          FROM GroupStudent GS
+          JOIN Student S ON GS.StudentId = S.Id
+          JOIN Person P ON S.Id = P.Id
+          JOIN Lookup Lk ON P.Gender = Lk.Id
+          JOIN Lookup L2 ON GS.Status = L2.Id
+          WHERE GS.GroupId = @GrpID
+          AND P.FirstName NOT LIKE '!!%'
+          AND L2.Value = 'Active'"
+                :
+                @"SELECT S.Id AS StudentId, S.RegistrationNo, P.FirstName, P.LastName, P.Contact, Lk.Value AS Gender
+          FROM Student S
+          JOIN Person P ON S.Id = P.Id
+          JOIN Lookup Lk ON P.Gender = Lk.Id
+          LEFT JOIN GroupStudent GS ON GS.StudentId = S.Id
+          WHERE (GS.StudentId IS NULL OR GS.Status = (SELECT Id FROM Lookup WHERE Value = 'InActive'))
+          AND P.FirstName NOT LIKE '!!%'";
 
-        /// <summary>
-        /// Assign Project to Group ///////////////////////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        private void AssignProject()
-        {
-            Panel.Children.Clear();
-            AssignProjectUC grpPrj = new AssignProjectUC();
-
-            grpPrj.btnEnter.Content = "Assign Project";
-            grpPrj.btnEnter.Command = new RelayCommands(execute => AssignP(grpPrj));
-
-            Panel.Children.Add(grpPrj);
-            address.Content = "Home -> Group Section -> Assign a Project";
-        }
-
-        private void AssignP(AssignProjectUC grp)
-        {
-            if (canAssignPrj(grp))
+            using (SqlCommand cmd = new SqlCommand(query, con))
             {
-                addingAssignPrjInDb(grp);
-                MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
-                clearAssignData(grp);
+                cmd.Parameters.AddWithValue("@GrpID", gid);
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
             }
-            else
-                MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        private bool canAssignPrj(AssignProjectUC grp)
-        {
-            if (string.IsNullOrEmpty(grp.cbGroupID.Text) || string.IsNullOrEmpty(grp.cbProjectID.Text) || string.IsNullOrEmpty(grp.txtdate.Text))
-                return false;
-            else
-                return true;
-        }
-
-        private void addingAssignPrjInDb(AssignProjectUC grp)
-        {
-
-        }
-
-        private void clearAssignData(AssignProjectUC grp)
-        {
-            grp.cbGroupID.Text = string.Empty;
-            grp.cbProjectID.Text = string.Empty;
-            grp.txtdate.Text = string.Empty;
         }
 
 
-        */
     }
 }

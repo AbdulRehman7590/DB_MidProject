@@ -21,15 +21,25 @@
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
-        <!-- Combo Box Style-->
-        <Style TargetType="ComboBox">
-            <Setter Property="Width" Value="350"/>
+        <!-- Text Block Style-->
+        <Style TargetType="TextBlock">
+            <Setter Property="Width" Value="400"/>
             <Setter Property="Height" Value="42"/>
             <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontFamily" Value="Arial"></Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="Background" Value="DarkGray"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-
+        
+        <!-- Radio Buttons -->
+        <Style TargetType="RadioButton">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Margin" Value="20,10,20,10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        
         <!-- StackPanel Style -->
         <Style TargetType="StackPanel">
             <Setter Property="Orientation" Value="Horizontal"/>
@@ -38,41 +48,40 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="150"/>
-            <RowDefinition Height="150"/>
+            <RowDefinition Height=".60*"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         
-        <StackPanel Grid.Row="0" >
-            <Label Content="Project ID:" HorizontalAlignment="Left"/>
-            <DataGrid x:Name="dgProject" HorizontalAlignment="Right" Margin="10"/>
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+            <Label Content="Advisor ID:" />
+            <DataGrid x:Name="dgAdvisor" IsReadOnly="True" BorderThickness="3" Margin="10"/>
         </StackPanel>
-
-        <StackPanel Grid.Row="1" >
-            <Label Content="Advisor ID:" HorizontalAlignment="Left"/>
-            <DataGrid x:Name="dgAdvisor" HorizontalAlignment="Right" Margin="10"/>
+        <StackPanel x:Name="rdoBtns" Grid.Row="1" HorizontalAlignment="Center">
+            <RadioButton x:Name="rdoMain" Content="Main Advisor" IsChecked="True"/>
+            <RadioButton x:Name="rdoCO" Content="Co-Advisor" />
+            <RadioButton x:Name="rdoInd" Content="Industry Advisor" />
         </StackPanel>
-
         <StackPanel  Grid.Row="2" HorizontalAlignment="Center">
-                <Label Content="Advisor Role:"/>
-                <ComboBox x:Name="cbAdvisorRole">
-                    <ComboBoxItem Content="Main Advisor"/>
-                    <ComboBoxItem Content="Co-Advisor"/>
-                    <ComboBoxItem Content="Industry Advisor"/>
-            </ComboBox>
+            <Label Content="Main-Advisor:"/>
+            <TextBlock x:Name="txtMainRole"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="3" HorizontalAlignment="Center">
-            <Label Content="Assignment Date:"/>
-            <DatePicker x:Name="txtdate" Width="350" Height="45" InputScope="Date" FontFamily="Arial" 
-              FontSize="28" VerticalContentAlignment="Center" />
+        <StackPanel  Grid.Row="3" HorizontalAlignment="Center">
+            <Label Content="Co-Advisor:"/>
+            <TextBlock x:Name="txtCoRole"/>
         </StackPanel>
 
-        <Button x:Name="btnEnter" Grid.Row="4" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
+        <StackPanel Grid.Row="4" HorizontalAlignment="Center">
+            <Label Content="Industry-Advisor:"/>
+            <TextBlock x:Name="txtIndusRole"/>
+        </StackPanel>
+
+        <Button x:Name="btnEnter" Grid.Row="5" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
                Width="200" Margin="20,20,10,20" Height="60" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-
 
     </Grid>
 </UserControl>

@@ -54,7 +54,9 @@
             </Grid.RowDefinitions>
             
             <!-- Logo -->
-            <Label Content="FYP" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="#018081"/>
+            <Label VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="#018081">
+                <Image Source="Images/logo.png" Height="120" Width="200"/>
+            </Label>
             
             <!-- Side Options -->
             <StackPanel Orientation="Vertical" Grid.Row="1" Background="#018081">
@@ -74,7 +76,7 @@
         <!-- The main area -->
         <Grid Grid.Row="1" Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="90"/>
+                <RowDefinition Height="60"/>
                 <RowDefinition Height="30"/>
                 <RowDefinition/>
                 <RowDefinition Height="30"/>
@@ -94,7 +96,9 @@
             <Label Content="{Binding CurrentTime}" Grid.Row="3" FontSize="15" HorizontalAlignment="Right" Margin="0,0,10,0"/>
         
             <!-- Main Content -->
-            <Grid x:Name="panel" Grid.Row="2"/>
+            <Grid x:Name="panel" Grid.Row="2">
+                <Image Source="Images/fyp.png"/>
+            </Grid>
         </Grid>
      
     </Grid>

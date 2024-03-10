@@ -20,32 +20,41 @@
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
+        
+        <!-- Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontFamily" Value="Book Antiqua"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Margin" Value="75,10,10,10"/>
+            <Setter Property="Height" Value="55"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height=".7*"/>
-            <RowDefinition Height=".3*"/>
+            <RowDefinition Height=".2*"/>
+            <RowDefinition Height=".55*"/>
+            <RowDefinition Height=".35*"/>
         </Grid.RowDefinitions>
         
-        <StackPanel Orientation="Horizontal" Grid.Row="0">
-            <Label x:Name="lblTable" Content="Projects:"/>
-            <DataGrid x:Name="dgProjects"/>
-        </StackPanel>
+        <Label x:Name="lblTable" Content="Projects:" Grid.Row="0"/>
+        <DataGrid x:Name="dgProjects" Margin="10" BorderThickness="3" Grid.Row="1" IsReadOnly="True"/>
         
-        <StackPanel Grid.Row="1" Orientation="Vertical">
-            
+        <StackPanel Grid.Row="2" Orientation="Vertical">
+
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Label Content="Current Id:"/>
-                <Label x:Name="lbldata" />
+                <Label x:Name="lblcurrent" Content="Current:"/>
+                <Label x:Name="lbldata" Width="350" Margin="0" Background="WhiteSmoke"/>
+                <Button x:Name="btnDelete" Content="Delete" Background="Red" />
             </StackPanel>
             
-            <StackPanel Orientation="Horizontal">
-                <Label Content="DOB"/>
-                <DatePicker x:Name="txtDOB" Width="250" Height="40" InputScope="Date" FontFamily="Arial" 
-                    FontSize="25"/>
-                <Button x:Name="btnEnter" Content="Update" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
-                    Grid.Row="1" Width="200" Margin="75,20,20,20" Height="60" HorizontalAlignment="Right"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Label x:Name="lbldate" Content="Assignment Date:"/>
+                <DatePicker x:Name="txtdate" Width="250" Height="45" InputScope="Date" FontFamily="Arial" 
+                    FontSize="28" VerticalContentAlignment="Center"/>
+                <Button x:Name="btnEnter" Content="Update" Background="DarkCyan"/>
             </StackPanel>
         </StackPanel>
 

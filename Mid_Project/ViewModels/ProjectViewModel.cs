@@ -34,7 +34,7 @@ namespace Mid_Project.ViewModels
         /// <summary>
         /// Add Project /////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// </summary>
-        private void AddProject() 
+        private void AddProject()
         {
             Panel.Children.Clear();
             AddProjectUC prj = new AddProjectUC();
@@ -70,17 +70,17 @@ namespace Mid_Project.ViewModels
 
         private bool addingProjectInDb(AddProjectUC eval)
         {
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
 
-                SqlCommand cmd = new SqlCommand(@"INSERT INTO Project VALUES (@Title, @Description)", con);
-                cmd.Parameters.AddWithValue("@Title", eval.txtTitle.Text);
-                cmd.Parameters.AddWithValue("@Description", eval.txtTitle.Text);
-                cmd.ExecuteNonQuery();
-
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO Project VALUES (@Title, @Description)", con);
+                    cmd.Parameters.AddWithValue("@Title", eval.txtTitle.Text);
+                    cmd.Parameters.AddWithValue("@Description", eval.txtDescription.Text);
+                    cmd.ExecuteNonQuery();
+                }
                 return true;
             }
             catch (Exception ex)
@@ -104,11 +104,11 @@ namespace Mid_Project.ViewModels
         {
             Panel.Children.Clear();
             ViewData eval = new ViewData();
+
             eval.btnUpdate.Command = new RelayCommands(execute => UpdateProject(eval), canExecute => eval.lvTableData.SelectedItem != null);
             eval.btnDelete.Command = new RelayCommands(execute => DeleteProject(eval), canExecute => eval.lvTableData.SelectedItem != null);
 
-            string query = @"SELECT Id, Title, Description FROM Project";
-            Configuration.ShowData(eval.lvTableData, query);
+            Configuration.ShowData(eval.lvTableData, @"SELECT Id, Title, Description FROM Project WHERE Title NOT LIKE '!!%'");
 
             Panel.Children.Add(eval);
             address.Content = "Home -> Project Section -> View Projects";
@@ -131,25 +131,27 @@ namespace Mid_Project.ViewModels
 
         private void UpdateP(AddProjectUC prj, ViewData man)
         {
-            var con = Configuration.getInstance().getConnection();
-
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
 
-                SqlCommand cmd = new SqlCommand("UPDATE Project SET Title = @Title, Description = @Description WHERE Id = @Id", con);
-                cmd.Parameters.AddWithValue("@Title", prj.txtTitle.Text);
-                cmd.Parameters.AddWithValue("@Description", prj.txtDescription.Text);
-                cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
-                cmd.ExecuteNonQuery();
-
+                    SqlCommand cmd = new SqlCommand(@"UPDATE Project SET Title = @Title, Description = @Description WHERE Id = @Id", con);
+                    cmd.Parameters.AddWithValue("@Title", prj.txtTitle.Text);
+                    cmd.Parameters.AddWithValue("@Description", prj.txtDescription.Text);
+                    cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
+                    cmd.ExecuteNonQuery();
+                }
                 MessageBox.Show("Data Updated Successfully!!!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
-                GobackToView();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ViewProjects();
             }
         }
 
@@ -159,27 +161,32 @@ namespace Mid_Project.ViewModels
             {
                 try
                 {
-                    var con = Configuration.getInstance().getConnection();
-                    SqlCommand cmd = new SqlCommand("Delete From Project Where Id = @Id");
-                    cmd.Parameters.AddWithValue("@Id", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
-                    cmd.ExecuteNonQuery();
+                    using (var con = Configuration.getInstance().getConnection())
+                    {
+                        con.Open();
+                        SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION
+                                                          UPDATE Project SET Title = @Title, Description = @Description WHERE Id = @Id;
+                                                          DELETE FROM ProjectAdvisor WHERE ProjectId  = @Id;
+                                                          DELETE FROM GroupProject WHERE ProjectId = @Id;
+                                                          COMMIT TRANSACTION", con);
+                        cmd.Parameters.AddWithValue("@Id", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
+                        cmd.Parameters.AddWithValue("@Title", "!!" + ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[1].ToString());
+                        cmd.Parameters.AddWithValue("@Description", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[2].ToString());
+                        cmd.ExecuteNonQuery();
+                    }
                     MessageBox.Show("Deleted Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    GobackToView();
                 }
                 catch (Exception error)
                 {
                     MessageBox.Show(error.Message);
                 }
+                finally
+                {
+                    ViewProjects();
+                }
             }
             else
                 MessageBox.Show("Select Valid row!", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-        }
-
-
-        private void GobackToView()
-        {
-            Panel.Children.Clear();
-            ViewProjects();
         }
 
 
@@ -190,76 +197,117 @@ namespace Mid_Project.ViewModels
         private void AddProjectAdvisor()
         {
             Panel.Children.Clear();
-            AddProjectAdvisorUC prj = new AddProjectAdvisorUC();
+            ViewData grp = new ViewData();
 
-            prj.btnEnter.Content = "Add Advisor";
-            prj.btnEnter.Command = new RelayCommands(execute => AddPrjAdvisor(prj));
+            Configuration.ShowData(grp.lvTableData, @"SELECT Id, Title, Description FROM Project LEFT JOIN ProjectAdvisor PA ON Id = PA.ProjectId WHERE PA.AdvisorId IS NULL AND PA.AdvisorRole IS NULL AND Title NOT LIKE '!!%'");
 
-            string query = @"SELECT Ad.Id, FirstName, LastName, Lk.Value AS Designation, Salary, Contact, Email,  DateOfBirth, (SELECT Value FROM Lookup WHERE Gender = Lookup.Id) AS Gender
-                             FROM Advisor Ad 
-                                JOIN Lookup Lk ON Ad.Designation = Lk.Id
-                                JOIN Person P ON P.Gender = Lk.Id";
-            Configuration.ShowData(prj.dgAdvisor,query);
+            grp.btnUpdate.Visibility = Visibility.Hidden;
+            grp.btnDelete.Visibility = Visibility.Hidden;
 
-            string query1 = @"SELECT Id, Title, Description FROM Project";
-            Configuration.ShowData(prj.dgProject, query1);
+            grp.lvTableData.MouseDoubleClick += (sender, e) => AddPrjAdvisor(grp);
 
-            Panel.Children.Add(prj);
+            Panel.Children.Add(grp);
             address.Content = "Home -> Project Section -> Add Project Advisor";
         }
 
-        private void AddPrjAdvisor(AddProjectAdvisorUC eval)
+        private void RefreshPage(DataGrid dg)
         {
-            if (canAddPrjAdvisor(eval))
+            string query = @"SELECT Ad.Id, P.FirstName, P.LastName, Lk.Value AS Designation, Ad.Salary, P.Contact, P.Email, P.DateOfBirth, 
+                                (SELECT Value FROM Lookup L WHERE P.Gender = L.Id AND L.Category = 'Gender') AS Gender
+                            FROM Advisor Ad 
+                            	JOIN Lookup Lk ON Ad.Designation = Lk.Id AND Lk.Category = 'Designation'
+                            	JOIN Person P ON Ad.Id = P.Id
+								LEFT JOIN ProjectAdvisor PA ON Ad.Id = PA.AdvisorId
+							WHERE PA.ProjectId IS NULL AND P.FirstName NOT LIKE '!!%'";
+            Configuration.ShowData(dg, query);
+        }
+
+        private void AddPrjAdvisor(ViewData eval)
+        {
+            Panel.Children.Clear();
+            AddProjectAdvisorUC prj = new AddProjectAdvisorUC();
+
+            RefreshPage(prj.dgAdvisor);
+
+            prj.dgAdvisor.MouseDoubleClick += (sender, e) => PopulateData(prj);
+
+            prj.btnEnter.Content = "Add Advisors";
+            prj.btnEnter.Command = new RelayCommands(execute => AddPrjAdv(prj, eval), canExecute => FillDataMessage(prj));
+
+            Panel.Children.Add(prj);
+            address.Content = "Home -> Project Section -> Add Project Advisor -> Add Advisor in Project";
+        }
+
+        private void PopulateData(AddProjectAdvisorUC prj)
+        {
+            string advisor = ((DataRowView)prj.dgAdvisor.SelectedItem).Row.ItemArray[0].ToString() + " " + ((DataRowView)prj.dgAdvisor.SelectedItem).Row.ItemArray[1].ToString() + " " + ((DataRowView)prj.dgAdvisor.SelectedItem).Row.ItemArray[2].ToString();
+
+            if (prj.rdoMain.IsChecked == true && (prj.txtCoRole.Text != advisor && prj.txtIndusRole.Text != advisor))
+                prj.txtMainRole.Text = advisor;
+            else if (prj.rdoCO.IsChecked == true && (prj.txtMainRole.Text != advisor && prj.txtIndusRole.Text != advisor))
+                prj.txtCoRole.Text = advisor;
+            else if (prj.rdoInd.IsChecked == true && (prj.txtCoRole.Text != advisor && prj.txtMainRole.Text != advisor))
+                prj.txtIndusRole.Text = advisor;
+            else
+                MessageBox.Show("Advisor already added!!!", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void AddPrjAdv(AddProjectAdvisorUC prj, ViewData eval)
+        {
+            using (var con = Configuration.getInstance().getConnection())
             {
-                if (addingPrjAdvisorInDb(eval))
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+                try
                 {
-                    MessageBox.Show("Project Advisor Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    clearAddPrjAdvisorData(eval);
+
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO ProjectAdvisor VALUES(@AdvisorId, @ProjectId, @AdvisorRole, @AssignmentDate)", con, transaction);
+                    cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)eval.lvTableData.SelectedItem).Row["Id"]);
+                    cmd.Parameters.AddWithValue("@AdvisorId", prj.txtMainRole.Text.ToString().Split(' ')[0]);
+                    cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@AdvisorRole", 11);
+                    cmd.ExecuteNonQuery();
+
+
+                    cmd = new SqlCommand(@"INSERT INTO ProjectAdvisor VALUES(@AdvisorId, @ProjectId, @AdvisorRole, @AssignmentDate)", con, transaction);
+                    cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)eval.lvTableData.SelectedItem).Row["Id"]);
+                    cmd.Parameters.AddWithValue("@AdvisorId", prj.txtCoRole.Text.ToString().Split(' ')[0]);
+                    cmd.Parameters.AddWithValue("@AdvisorRole", 12);
+                    cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+
+
+                    cmd = new SqlCommand(@"INSERT INTO ProjectAdvisor VALUES(@AdvisorId, @ProjectId, @AdvisorRole, @AssignmentDate)", con, transaction);
+                    cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)eval.lvTableData.SelectedItem).Row["Id"]);
+                    cmd.Parameters.AddWithValue("@AdvisorId", prj.txtIndusRole.Text.ToString().Split(' ')[0]);
+                    cmd.Parameters.AddWithValue("@AdvisorRole", 14);
+                    cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+
+                    transaction.Commit();
+
+                    MessageBox.Show("Added Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception error)
+                {
+                    transaction.Rollback();
+                    MessageBox.Show(error.Message);
                 }
             }
-            else
-                MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+
+            AddProjectAdvisor();            
         }
 
-        private bool canAddPrjAdvisor(AddProjectAdvisorUC eval)
+        private bool FillDataMessage(AddProjectAdvisorUC prj)
         {
-            if (string.IsNullOrEmpty(eval.txtdate.Text) || string.IsNullOrEmpty(((DataRowView)eval.dgAdvisor.SelectedItem).Row.ItemArray[0].ToString()) || string.IsNullOrEmpty(((DataRowView)eval.dgProject.SelectedItem).Row.ItemArray[0].ToString()) || string.IsNullOrEmpty(eval.cbAdvisorRole.Text))
-                return false;
-            else
-                return true;
-
-        }
-
-        private bool addingPrjAdvisorInDb(AddProjectAdvisorUC eval)
-        {
-            var con = Configuration.getInstance().getConnection();
-            try
+            if (string.IsNullOrEmpty(prj.txtMainRole.Text) || string.IsNullOrEmpty(prj.txtCoRole.Text) || string.IsNullOrEmpty(prj.txtIndusRole.Text))
             {
-                if (con.State == ConnectionState.Closed)
-                    con.Open();
-
-                SqlCommand cmd = new SqlCommand(@"INSERT INTO ProjectAdvisor values (@ProjectId, @AdvisorId, @AdvisorRole, @AssignmentDate)", con);
-                cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)eval.dgProject.SelectedItem).Row.ItemArray[0].ToString());
-                cmd.Parameters.AddWithValue("@AdvisorId", ((DataRowView)eval.dgAdvisor.SelectedItem).Row.ItemArray[0].ToString());
-                cmd.Parameters.AddWithValue("@AdvisorRole", eval.cbAdvisorRole.SelectedIndex + 11);
-                cmd.Parameters.AddWithValue("@AssignmentDate", eval.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
-                cmd.ExecuteNonQuery();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
+            else
+                return true;
         }
 
-        private void clearAddPrjAdvisorData(AddProjectAdvisorUC eval)
-        {
-            eval.cbAdvisorRole.Text = string.Empty;
-            eval.txtdate.Text = string.Empty;
-        }
 
 
         /// <summary>
@@ -268,18 +316,33 @@ namespace Mid_Project.ViewModels
         private void ViewProjectAdvisors()
         {
             Panel.Children.Clear();
-            ViewData eval = new ViewData();
-            eval.btnUpdate.Command = new RelayCommands(execute => UpdatePrjAdvisor(eval), canExecute => eval.lvTableData.SelectedItem != null);
-            eval.btnDelete.Command = new RelayCommands(execute => DeletePrjAdvisor(eval), canExecute => eval.lvTableData.SelectedItem != null);
+            ViewData grp = new ViewData();
 
-            string query = @"SELECT PA.AdvisorId, CONCAT(P.FirstName, P.LastName) AS Name, PA.ProjectId, Prj.Title, PA.AdvisorRole, PA.AssignmentDate 
-                             FROM ProjectAdvisor PA
-	                            JOIN Person P ON PA.AdvisorID = P.Id
-	                            JOIN Project Prj ON PA.ProjectId = Prj.Id";
-            Configuration.ShowData(eval.lvTableData, query);
+            string query = @"SELECT PA.ProjectId, 
+                                 MAX(P.Title) AS Title, 
+                                 MAX(CASE WHEN PA.AdvisorRole = 11 THEN A.Id END) AS MainAdvisorId,
+                                 MAX(CASE WHEN PA.AdvisorRole = 11 THEN CONCAT(Pers.FirstName, ' ', Pers.LastName) END) AS MainAdvisor,
+                                 MAX(CASE WHEN PA.AdvisorRole = 12 THEN A.Id END) AS CoAdvisorId, 
+                                 MAX(CASE WHEN PA.AdvisorRole = 12 THEN CONCAT(Pers.FirstName, ' ', Pers.LastName) END) AS CoAdvisor, 
+                                 MAX(CASE WHEN PA.AdvisorRole = 14 THEN A.Id END) AS IndustryAdvisorId,
+                                 MAX(CASE WHEN PA.AdvisorRole = 14 THEN CONCAT(Pers.FirstName, ' ', Pers.LastName) END) AS IndustryAdvisor
+                             FROM ProjectAdvisor PA 
+                                 INNER JOIN Advisor A ON PA.AdvisorId = A.Id 
+                                 JOIN Project P ON P.Id = PA.ProjectId 
+                                 JOIN Person Pers ON Pers.Id = A.Id
+                             WHERE Pers.FirstName NOT LIKE '!!%' AND P.Title NOT LIKE '!!%'
+                             GROUP BY PA.ProjectId";
 
-            Panel.Children.Add(eval);
+            Configuration.ShowData(grp.lvTableData, query);
+
+            grp.btnDelete.Visibility = Visibility.Hidden;
+            grp.btnUpdate.HorizontalAlignment = HorizontalAlignment.Right;
+
+            grp.btnUpdate.Command = new RelayCommands(execute => UpdatePrjAdvisor(grp), canExecute => grp.lvTableData.SelectedItem != null);
+
+            Panel.Children.Add(grp);
             address.Content = "Home -> Project Section -> View Project Advisors";
+
         }
 
         private void UpdatePrjAdvisor(ViewData man)
@@ -287,40 +350,61 @@ namespace Mid_Project.ViewModels
             Panel.Children.Clear();
             AddProjectAdvisorUC prj = new AddProjectAdvisorUC();
 
-            string query = @"SELECT Ad.Id, P.FirstName, P.LastName, Lk.Value AS Designation, Salary, P.Contact, P.Email, P.DateOfBirth, (SELECT Value FROM Lookup WHERE P.Gender = Lookup.Id) AS Gender
-                             FROM Advisor Ad 
-                                JOIN Lookup Lk ON Ad.Designation = Lk.Id
-                                JOIN Person P ON P.Gender = Lk.Id";
-            Configuration.ShowData(prj.dgAdvisor, query);
+            RefreshPage(prj.dgAdvisor);
 
-            string query1 = @"SELECT Id, Title, Description FROM Project";
-            Configuration.ShowData(prj.dgProject, query1);
+            prj.txtMainRole.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString() + " " + ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString();
+            prj.txtCoRole.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[4].ToString() + " " + ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[5].ToString();
+            prj.txtIndusRole.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[6].ToString() + " " + ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[7].ToString();
 
-            prj.cbAdvisorRole.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString();
-            prj.txtdate.Text = ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString();
+            prj.dgAdvisor.MouseDoubleClick += (sender, e) => PopulateData(prj);
 
-            prj.btnEnter.Content = "Update Project Advisor";
-            prj.btnEnter.Command = new RelayCommands(execute => UpdatePA(prj));
+            prj.btnEnter.Content = "Add Advisors";
+            prj.btnEnter.Command = new RelayCommands(execute => UpdatePA(prj, man), canExecute => FillDataMessage(prj));
 
             Panel.Children.Add(prj);
             address.Content = "Home -> Project Section -> View Project Advisors -> Update Project Advisor";
         }
 
-        private void UpdatePA(AddProjectAdvisorUC prj)
+        private void UpdatePA(AddProjectAdvisorUC prj, ViewData eval)
         {
+            using (var con = Configuration.getInstance().getConnection())
+            {
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+                try
+                {
+                    SqlCommand cmd = new SqlCommand(@"UPDATE ProjectAdvisor SET AdvisorId = @AdvisorId, AssignmentDate = @AssignmentDate WHERE ProjectId = @ProjectId, AdvisorRole = @AdvisorRole)", con, transaction);
+                    cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[2]);
+                    cmd.Parameters.AddWithValue("@AdvisorId", prj.txtMainRole.Text.ToString().Split(' ')[0]);
+                    cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@AdvisorRole", 11);
+                    cmd.ExecuteNonQuery();
 
-        }
+                    cmd = new SqlCommand(@"UPDATE ProjectAdvisor SET AdvisorId = @AdvisorId, AssignmentDate = @AssignmentDate WHERE ProjectId = @ProjectId, AdvisorRole = @AdvisorRole)", con, transaction);
+                    cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[4]);
+                    cmd.Parameters.AddWithValue("@AdvisorId", prj.txtCoRole.Text.ToString().Split(' ')[0]);
+                    cmd.Parameters.AddWithValue("@AdvisorRole", 12);
+                    cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
+                    cmd.ExecuteNonQuery();
 
-        private void DeletePrjAdvisor(ViewData eval)
-        {
+                    cmd = new SqlCommand(@"UPDATE ProjectAdvisor SET AdvisorId = @AdvisorId, AssignmentDate = @AssignmentDate WHERE ProjectId = @ProjectId, AdvisorRole = @AdvisorRole)", con, transaction);
+                    cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[6]);
+                    cmd.Parameters.AddWithValue("@AdvisorId", prj.txtIndusRole.Text.ToString().Split(' ')[0]);
+                    cmd.Parameters.AddWithValue("@AdvisorRole", 14);
+                    cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
+                    cmd.ExecuteNonQuery();
 
-        }
+                    transaction.Commit();
 
-
-        private void GobackToView1()
-        {
-            Panel.Children.Clear();
-            ViewProjectAdvisors();
+                    MessageBox.Show("Added Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception error)
+                {
+                    transaction.Rollback();
+                    MessageBox.Show(error.Message);
+                }
+            }
+            ViewProjectAdvisors();            
         }
 
     }

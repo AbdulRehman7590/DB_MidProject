@@ -52,7 +52,7 @@ namespace Mid_Project.ViewModels
             {
                 if (addingEvaluationInDb(eval))
                 {
-                    MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Evaluation Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
                     clearAddData(eval);
                 }
             }
@@ -70,18 +70,18 @@ namespace Mid_Project.ViewModels
 
         private bool addingEvaluationInDb(AddUpdateUC eval)
         {
-            var con = Configuration.getInstance().getConnection();
             try
             {
-                if (con.State == ConnectionState.Closed)
+                using (var con = Configuration.getInstance().getConnection())
+                {
                     con.Open();
 
-                SqlCommand cmd = new SqlCommand(@"INSERT INTO Evaluation VALUES (@Name, @TotalMarks, @TotalWeightage)", con);
-                cmd.Parameters.AddWithValue("@Name", eval.txtEvaluationName.Text);
-                cmd.Parameters.AddWithValue("@TotalMarks", eval.txtMarks.Text);
-                cmd.Parameters.AddWithValue("@TotalWeightage", eval.txtWeightage.Text);
-                cmd.ExecuteNonQuery();
-
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO Evaluation VALUES (@Name, @TotalMarks, @TotalWeightage)", con);
+                    cmd.Parameters.AddWithValue("@Name", eval.txtEvaluationName.Text);
+                    cmd.Parameters.AddWithValue("@TotalMarks", eval.txtMarks.Text);
+                    cmd.Parameters.AddWithValue("@TotalWeightage", eval.txtWeightage.Text);
+                    cmd.ExecuteNonQuery();
+                }
                 return true;
             }
             catch (Exception ex)
@@ -109,7 +109,7 @@ namespace Mid_Project.ViewModels
             eval.btnUpdate.Command = new RelayCommands(execute => UpdateEvaluation(eval), canExecute => eval.lvTableData.SelectedItem != null);
             eval.btnDelete.Command = new RelayCommands(execute => DeleteEvaluation(eval), canExecute => eval.lvTableData.SelectedItem != null);
 
-            string query = @"SELECT E.Id, E.Name, E.TotalMarks, E.TotalWeightage FROM Evaluation E";
+            string query = @"SELECT E.Id, E.Name, E.TotalMarks, E.TotalWeightage FROM Evaluation E WHERE E.Name NOT LIKE '!!%'";
             Configuration.ShowData(eval.lvTableData, query);
 
             Panel.Children.Add(eval);
@@ -126,21 +126,67 @@ namespace Mid_Project.ViewModels
             upd.txtWeightage.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[3].ToString();
 
             upd.btnEnter.Content = "Update Evaluation";
-            upd.btnEnter.Command = new RelayCommands(execute => UpdateE(upd));
+            upd.btnEnter.Command = new RelayCommands(execute => UpdateE(upd, ((DataRowView)eval.lvTableData.SelectedItem).Row["Id"].ToString()));
             
             Panel.Children.Add(upd);
             address.Content = "Home -> Evaluation Section -> View Evaluations -> Update Evaluation";
         }
 
-        private void UpdateE(AddUpdateUC upd)
+        private void UpdateE(AddUpdateUC upd, string id)
         {
+            try
+            {
+                using (var con = Configuration.getInstance().getConnection())
+                {
+                    con.Open();
 
+                    SqlCommand cmd = new SqlCommand(@"UPDATE Evaluation SET Name = @Name, TotalMarks = @TotalMarks, TotalWeightage = @TotalWeightage WHERE Id = @Id", con);
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    cmd.Parameters.AddWithValue("@Name", upd.txtEvaluationName.Text);
+                    cmd.Parameters.AddWithValue("@TotalMarks", upd.txtMarks.Text);
+                    cmd.Parameters.AddWithValue("@TotalWeightage", upd.txtWeightage.Text);
+                    cmd.ExecuteNonQuery();
+                }
+                MessageBox.Show("Evaluation Updated Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+                clearAddData(upd);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ViewEvaluation();
+            }
         }
 
         private void DeleteEvaluation(ViewData eval)
         {
+            try
+            {
+                using (var con = Configuration.getInstance().getConnection())
+                {
+                    con.Open();
 
+                    SqlCommand cmd = new SqlCommand(@"UPDATE Evaluation SET Name = @Name, TotalMarks = @TotalMarks, TotalWeightage = @TotalWeightage WHERE Id = @Id", con);
+                    cmd.Parameters.AddWithValue("@Id", ((DataRowView)eval.lvTableData.SelectedItem).Row["Id"]);
+                    cmd.Parameters.AddWithValue("@Name", "!!" + ((DataRowView)eval.lvTableData.SelectedItem).Row["Name"]);
+                    cmd.Parameters.AddWithValue("@TotalMarks", ((DataRowView)eval.lvTableData.SelectedItem).Row["TotalMarks"]);
+                    cmd.Parameters.AddWithValue("@TotalWeightage", ((DataRowView)eval.lvTableData.SelectedItem).Row["TotalWeightage"]);
+                    cmd.ExecuteNonQuery();
+                }
+                MessageBox.Show("Evaluation Updated Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ViewEvaluation();
+            }
         }
+
 
 
         /// <summary>
@@ -149,90 +195,124 @@ namespace Mid_Project.ViewModels
         private void MarkEvaluation()
         {
             Panel.Children.Clear();
-            MarkUpdateUC markEval = new MarkUpdateUC();
+            ViewData markE = new ViewData();
 
-            markEval.btnEnter.Command = new RelayCommands(execute => MarkEval(markEval));
+            string query = @"SELECT G.Id AS GroupID, Prj.Id AS ProjectID, Prj.Title, E.Id AS EvaluationID, E.Name AS EvaluationName, E.TotalMarks, E.TotalWeightage
+                             FROM [Group] G
+                             	JOIN GroupEvaluation GE ON G.Id = GE.GroupId
+                             	JOIN Evaluation E ON GE.EvaluationId = E.Id
+                             	JOIN GroupProject GP ON G.Id = GP.GroupId
+                             	JOIN Project Prj ON GP.ProjectId = Prj.Id
+                             WHERE GE.ObtainedMarks = 0";
+            Configuration.ShowData(markE.lvTableData, query);
 
-            Panel.Children.Add(markEval);
+            markE.btnDelete.Visibility = Visibility.Hidden;
+            markE.btnUpdate.HorizontalAlignment = HorizontalAlignment.Right;
+            markE.btnUpdate.Content = "Mark";
+            markE.btnUpdate.Command = new RelayCommands(execute => MarkEval(markE), canExecute => markE.lvTableData.SelectedItem != null);
+
+            Panel.Children.Add(markE);
             address.Content = "Home -> Evaluation Section -> Mark Evaluation";
         }
 
-        private void MarkEval(MarkUpdateUC eval)
+        private void MarkEval(ViewData eval)
         {
-            if (canMarkEval(eval))
+            Panel.Children.Clear();
+            MarkUpdateUC mark = new MarkUpdateUC();
+
+            mark.tbGroupID.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["GroupID"].ToString();
+            mark.tbProjID.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["ProjectID"].ToString();
+            mark.tbProjTitle.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["Title"].ToString();
+            mark.tbevalID.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["EvaluationID"].ToString();
+            mark.tbEvalTitle.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["EvaluationName"].ToString();
+
+            mark.btnEnter.Content = "Mark Evaluation";
+            mark.btnEnter.Command = new RelayCommands(execute => AddMarkEval(mark), canExecute => mark.txtObMarks.Text != null && mark.tbProjID.Text != null);
+
+            Panel.Children.Add(mark);
+            address.Content = "Home -> Evaluation Section -> Mark Evaluation";
+        }
+
+        private void AddMarkEval(MarkUpdateUC eval)
+        {
+            try
             {
-                addingMarkEvaluationInDb(eval);
-                MessageBox.Show("Student Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
-                clearMarkData(eval);
+                using (var con = Configuration.getInstance().getConnection())
+                {
+                    con.Open();
+                    SqlCommand cmd = new SqlCommand(@"UPDATE GroupEvaluation SET ObtainedMarks = @ObtainedMarks, EvaluationDate = @EvaluationDate WHERE EvaluationId = @EvaluationId AND GroupId = @GroupId", con);
+                    cmd.Parameters.AddWithValue("@GroupId", eval.tbGroupID.Text);
+                    cmd.Parameters.AddWithValue("@EvaluationId", eval.tbevalID.Text);
+                    cmd.Parameters.AddWithValue("@ObtainedMarks", eval.txtObMarks.Text);
+                    cmd.Parameters.AddWithValue("@EvaluationDate", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+                MessageBox.Show("Data Updated Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            else
-                MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                clearEvalData(eval);
+            }
         }
 
-        private bool canMarkEval(MarkUpdateUC eval)
+        private void clearEvalData(MarkUpdateUC eval)
         {
-            if (string.IsNullOrEmpty(eval.cbevalID.Text) || string.IsNullOrEmpty(eval.cbGroupID.Text) || string.IsNullOrEmpty(eval.txtObMarks.Text) || string.IsNullOrEmpty(eval.txtdate.Text))
-                return false;
-            else
-                return true;
-        }
-
-        private void addingMarkEvaluationInDb(MarkUpdateUC eval)
-        {
-
-        }
-
-        private void clearMarkData(MarkUpdateUC eval)
-        {
-            eval.cbevalID.Text = string.Empty;
-            eval.cbGroupID.Text = string.Empty;
+            eval.tbevalID.Text = string.Empty;
+            eval.tbEvalTitle.Text = string.Empty;
+            eval.tbGroupID.Text = string.Empty;
+            eval.tbProjID.Text = string.Empty;
+            eval.tbProjTitle.Text = string.Empty;
             eval.txtObMarks.Text = string.Empty;
-            eval.txtdate.Text = string.Empty;
         }
-
 
         /// <summary>
-        /// View Mark Evaluation Handling ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// View AND Update Mark Evaluation Handling //////////////////////////////////////////////////////////////////////////////////////////////////
         /// </summary>
         private void ViewMarkEvaluation()
         {
             Panel.Children.Clear();
-            ViewData eval = new ViewData();
-            eval.btnUpdate.Command = new RelayCommands(execute => UpdateMarkEvaluation(eval), canExecute => eval.lvTableData.SelectedItem != null);
-            eval.btnDelete.Command = new RelayCommands(execute => DeleteMarkEvaluation(eval), canExecute => eval.lvTableData.SelectedItem != null);
+            ViewData markE = new ViewData();
 
-            // Data Source dena h 
+            string query = @"SELECT G.Id AS GroupID, Prj.Id AS ProjectID, Prj.Title, E.Id AS EvaluationID, E.Name AS EvaluationName, GE.ObtainedMarks, E.TotalMarks, E.TotalWeightage
+                             FROM [Group] G
+                             	JOIN GroupEvaluation GE ON G.Id = GE.GroupId
+                             	JOIN Evaluation E ON GE.EvaluationId = E.Id
+                             	JOIN GroupProject GP ON G.Id = GP.GroupId
+                             	JOIN Project Prj ON GP.ProjectId = Prj.Id
+                             WHERE GE.ObtainedMarks <> 0";
+            Configuration.ShowData(markE.lvTableData, query);
 
-            Panel.Children.Add(eval);
+            markE.btnDelete.Visibility = Visibility.Hidden;
+            markE.btnUpdate.HorizontalAlignment = HorizontalAlignment.Right;
+            
+            markE.btnUpdate.Command = new RelayCommands(execute => UpdateMarkEval(markE), canExecute => markE.lvTableData.SelectedItem != null);
+
+            Panel.Children.Add(markE);
             address.Content = "Home -> Evaluation Section -> View Mark Evaluations";
         }
 
-        private void UpdateMarkEvaluation(ViewData eval)
+        private void UpdateMarkEval(ViewData eval)
         {
             Panel.Children.Clear();
-            MarkUpdateUC upd = new MarkUpdateUC();
-            
-            /*
-            upd.txtevalID.Text = eval.lvTableData.SelectedItem.EvaluationID;
-            upd.txtGroupID.Text = eval.lvTableData.SelectedItem.GroupID;
-            upd.txtObMarks.Text = eval.lvTableData.SelectedItem.ObtainedMarks;
-            upd.txtdate.Text = eval.lvTableData.SelectedItem.EvaluationDate;
-            */
-            
-            upd.btnEnter.Content = "Update Project";
-            upd.btnEnter.Command = new RelayCommands(execute => UpdateMarkE(upd));
-            Panel.Children.Add(upd);
-            address.Content = "Home -> Evaluation Section -> View Mark Evaluations -> Update Mark Evaluations";
+            MarkUpdateUC mark = new MarkUpdateUC();
+
+            mark.tbGroupID.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["GroupID"].ToString();
+            mark.tbProjID.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["ProjectID"].ToString();
+            mark.tbProjTitle.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["Title"].ToString();
+            mark.tbevalID.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["EvaluationID"].ToString();
+            mark.tbEvalTitle.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["EvaluationName"].ToString();
+            mark.txtObMarks.Text = ((DataRowView)eval.lvTableData.SelectedItem).Row["ObtainedMarks"].ToString();
+
+            mark.btnEnter.Content = "Update Evaluation";
+            mark.btnEnter.Command = new RelayCommands(execute => AddMarkEval(mark));
+
+            Panel.Children.Add(mark);
+            address.Content = "Home -> Evaluation Section -> View Mark Evaluations -> Update";
         }
 
-        private void UpdateMarkE(MarkUpdateUC upd)
-        {
-
-        }
-
-        private void DeleteMarkEvaluation(ViewData eval)
-        {
-            
-        }
     }
 }

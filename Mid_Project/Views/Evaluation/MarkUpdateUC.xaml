@@ -5,14 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Mid_Project.Views.Evaluation"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="831.113">
     
     <UserControl.Resources>
         <!-- Label Style -->
         <Style TargetType="Label">
-            <Setter Property="Width" Value="200"/>
+            <Setter Property="Width" Value="150"/>
             <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="20"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="Black"/>
@@ -23,57 +22,62 @@
 
         <!-- TextBox Style -->
         <Style TargetType="TextBox">
-            <Setter Property="Width" Value="350"></Setter>
-            <Setter Property="Height" Value="42"></Setter>
-            <Setter Property="FontSize" Value="20"></Setter>
-            <Setter Property="FontFamily" Value="Arial"></Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-        </Style>
-
-        <!-- Combo Box Style-->
-        <Style TargetType="ComboBox">
-            <Setter Property="Width" Value="350"></Setter>
-            <Setter Property="Height" Value="42"></Setter>
-            <Setter Property="FontSize" Value="20"></Setter>
-            <Setter Property="FontFamily" Value="Arial"></Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Margin" Value="0,20,0,20"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- StackPanel Style -->
         <Style TargetType="StackPanel">
             <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
     </UserControl.Resources>
 
     <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
 
-        <StackPanel Orientation="Vertical">
-
-            <StackPanel>
-                <Label Content="Group ID:"/>
-                <ComboBox x:Name="cbGroupID"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <StackPanel Grid.Row="0">
+                <Label Content="Group Id:"/>
+                <TextBox x:Name="tbGroupID"/>
             </StackPanel>
 
-            <StackPanel>
-                <Label Content="Evaluation ID:"/>
-                <ComboBox x:Name="cbevalID"/>
+            <StackPanel Grid.Row="1">
+                <Label Content="Project Id:"/>
+                <TextBox x:Name="tbProjID"/>
+                <Label Content="Title:" Width="110" Margin="20,10,0,10"/>
+                <TextBox x:Name="tbProjTitle" Width="300" Height="auto" TextWrapping="Wrap"/>
             </StackPanel>
 
-            <StackPanel>
-                <Label Content="Obtained Marks:"/>
-                <TextBox x:Name="txtObMarks"/>
+            <StackPanel Grid.Row="2">
+                <Label Content="Evaluation Id:"/>
+                <TextBox x:Name="tbevalID"/>
+                <Label Content="Name:" Width="110" Margin="20,10,0,10"/>
+                <TextBox x:Name="tbEvalTitle" Width="300" Height="auto" TextWrapping="Wrap"/>
             </StackPanel>
 
-            <StackPanel>
-                <Label Content="Evaluation Date:"/>
-                <DatePicker x:Name="txtdate" Width="350" Height="45" InputScope="Date" FontFamily="Arial" 
-              FontSize="28" VerticalContentAlignment="Center" />
+            <StackPanel Grid.Row="3">
+                <Label Content="Obtained Marks:" Width="200"/>
+                <TextBox x:Name="txtObMarks" Width="350" IsReadOnly="False"/>
             </StackPanel>
 
-            <Button x:Name="btnEnter" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
+
+            <Button x:Name="btnEnter" Grid.Row="4" Content="TBD" FontSize="25" FontWeight="Bold" FontFamily="Book Antiqua" Background="DarkCyan" 
                         Width="200" Margin="20,20,10,20" Height="60" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
 
-        </StackPanel>
+        </Grid>
 
     </Grid>
 </UserControl>

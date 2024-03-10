@@ -24,17 +24,13 @@
 
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Generate Report 1" Command="{Binding report1}"/>
-                <Button Content="Generate Report 2" Command="{Binding report2}"/>
+                <Button Content="Students Details Report" Command="{Binding report3}"/>
+                <Button Content="Advisor Details Report" Command="{Binding report2}"/>
             </StackPanel>
-            
+
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Generate Report 3" Command="{Binding report3}"/>
-                <Button Content="Generate Report 4" Command="{Binding report4}"/>
-            </StackPanel>
-            
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Generate Report 5" Command="{Binding report5}"/>
+                <Button Content="Project Advisors Report" Command="{Binding report1}"/>
+                <Button Content="Project Students Report" Command="{Binding report4}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

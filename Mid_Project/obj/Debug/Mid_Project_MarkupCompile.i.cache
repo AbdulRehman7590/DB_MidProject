@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 D:\4th semester\DB_Projects\Mid_Project\Mid_Project\App.xaml
-191885702946
+18-850093124
 
-341730335164
-141990183084
-MainWindow.xaml;Views\Advisor\AddAvisorUC.xaml;Views\Advisor\advisorUC.xaml;Views\CommonUCs\ViewData.xaml;Views\Evaluation\AddUpdateUC.xaml;Views\Evaluation\evaluationUC.xaml;Views\Evaluation\MarkUpdateUC.xaml;Views\Group\AddGroupStudentUC.xaml;Views\Group\AddGroupUC.xaml;Views\Group\AssignProjectUC.xaml;Views\Group\groupUC.xaml;Views\Group\ManageGroups.xaml;Views\Group\UpdateGroupData.xaml;Views\Project\AddProjectAdvisorUC.xaml;Views\Project\AddProjectUC.xaml;Views\Project\projectUC.xaml;Views\Reports\reportUC.xaml;Views\Student\studentUC.xaml;Views\Student\AddStudentUC.xaml;
+34737809925
+171414409407
+MainWindow.xaml;Views\Advisor\AddAvisorUC.xaml;Views\Advisor\advisorUC.xaml;Views\CommonUCs\ViewData.xaml;Views\Evaluation\AddUpdateUC.xaml;Views\Evaluation\evaluationUC.xaml;Views\Evaluation\MarkUpdateUC.xaml;Views\Group\AddGroupUC.xaml;Views\Group\AssignProjectUC.xaml;Views\Group\groupUC.xaml;Views\Group\ManageGroups.xaml;Views\Group\UpdateGroupData.xaml;Views\Project\AddProjectAdvisorUC.xaml;Views\Project\AddProjectUC.xaml;Views\Project\projectUC.xaml;Views\Reports\reportUC.xaml;Views\Student\studentUC.xaml;Views\Student\AddStudentUC.xaml;
 
-False
+True
 
