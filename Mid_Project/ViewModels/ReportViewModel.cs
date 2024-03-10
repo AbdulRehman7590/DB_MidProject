@@ -106,7 +106,7 @@ namespace Mid_Project.ViewModels
                              FROM Project P 
                              LEFT JOIN GroupProject GP ON P.Id = GP.ProjectId
                              WHERE P.Title NOT LIKE '!!%'";
-            PDFGenerator.GeneratePDF(query, "Project Students");
+            PDFGenerator.GeneratePDF(query, "Project Details");
         }
 
     }
