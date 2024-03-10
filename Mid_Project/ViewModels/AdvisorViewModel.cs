@@ -205,37 +205,12 @@ namespace Mid_Project.ViewModels
                             con.Open();
 
                         SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION
-                                                  UPDATE Advisor SET Designation = @Designation, Salary = @Salary WHERE Id = @Id;
-                                                  UPDATE Person SET FirstName = @FirstName, LastName = @LastName, Contact = @Contact, 
-                                                  Email = @Email, DateOfBirth = @DateOfBirth, Gender = @Gender WHERE Id = @Id
-                                                  COMMIT TRANSACTION"
-                        , con);
+                                                  UPDATE Person SET FirstName = @FirstName WHERE Id = @Id;
+                                                  DELETE FROM ProjectAdvisor WHERE AdvisorId = @Id;
+                                                  COMMIT TRANSACTION", con);
 
                         cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
                         cmd.Parameters.AddWithValue("@FirstName", "!!" + ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[1].ToString());
-                        cmd.Parameters.AddWithValue("@LastName", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString());
-
-                        if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString() == "Professor")
-                            cmd.Parameters.AddWithValue("@Designation", 6);
-                        else if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString() == "Associate Professor")
-                            cmd.Parameters.AddWithValue("@Designation", 7);
-                        else if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString() == "Assistant Professor")
-                            cmd.Parameters.AddWithValue("@Designation", 8);
-                        else if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString() == "Lecturer")
-                            cmd.Parameters.AddWithValue("@Designation", 9);
-                        else
-                            cmd.Parameters.AddWithValue("@Designation", 10);
-
-                        cmd.Parameters.AddWithValue("@Salary", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[4].ToString());
-                        cmd.Parameters.AddWithValue("@Contact", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[5].ToString());
-                        cmd.Parameters.AddWithValue("@Email", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[6].ToString());
-                        cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[7].ToString()));
-
-                        if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[8].ToString() == "Male")
-                            cmd.Parameters.AddWithValue("@Gender", 1);
-                        else
-                            cmd.Parameters.AddWithValue("@Gender", 2);
-
                         cmd.ExecuteNonQuery();
 
                         MessageBox.Show("Deleted Successfully!!!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);

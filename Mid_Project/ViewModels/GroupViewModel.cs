@@ -354,8 +354,7 @@ namespace Mid_Project.ViewModels
                 using (var con = Configuration.getInstance().getConnection())
                 {
                     con.Open();
-                    SqlCommand cmd = new SqlCommand(@"UPDATE GroupStudent SET Status = @Status WHERE GroupId = @GroupId AND StudentId = @StudentId", con);
-                    cmd.Parameters.AddWithValue("@Status", 4);
+                    SqlCommand cmd = new SqlCommand(@"UPDATE GroupStudent SET Status = 4 WHERE GroupId = @GroupId AND StudentId = @StudentId", con);
                     cmd.Parameters.AddWithValue("@GroupId", gid);
                     cmd.Parameters.AddWithValue("@StudentId", ((DataRowView)grp.dgSelect.SelectedItem).Row.ItemArray[0].ToString());
                     cmd.ExecuteNonQuery();

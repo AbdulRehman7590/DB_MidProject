@@ -168,11 +168,9 @@ namespace Mid_Project.ViewModels
                 {
                     con.Open();
 
-                    SqlCommand cmd = new SqlCommand(@"UPDATE Evaluation SET Name = @Name, TotalMarks = @TotalMarks, TotalWeightage = @TotalWeightage WHERE Id = @Id", con);
+                    SqlCommand cmd = new SqlCommand(@"UPDATE Evaluation SET Name = @Name WHERE Id = @Id", con);
                     cmd.Parameters.AddWithValue("@Id", ((DataRowView)eval.lvTableData.SelectedItem).Row["Id"]);
                     cmd.Parameters.AddWithValue("@Name", "!!" + ((DataRowView)eval.lvTableData.SelectedItem).Row["Name"]);
-                    cmd.Parameters.AddWithValue("@TotalMarks", ((DataRowView)eval.lvTableData.SelectedItem).Row["TotalMarks"]);
-                    cmd.Parameters.AddWithValue("@TotalWeightage", ((DataRowView)eval.lvTableData.SelectedItem).Row["TotalWeightage"]);
                     cmd.ExecuteNonQuery();
                 }
                 MessageBox.Show("Evaluation Updated Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);

@@ -165,13 +165,12 @@ namespace Mid_Project.ViewModels
                     {
                         con.Open();
                         SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION
-                                                          UPDATE Project SET Title = @Title, Description = @Description WHERE Id = @Id;
+                                                          UPDATE Project SET Title = @Title WHERE Id = @Id;
                                                           DELETE FROM ProjectAdvisor WHERE ProjectId  = @Id;
                                                           DELETE FROM GroupProject WHERE ProjectId = @Id;
                                                           COMMIT TRANSACTION", con);
                         cmd.Parameters.AddWithValue("@Id", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
                         cmd.Parameters.AddWithValue("@Title", "!!" + ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[1].ToString());
-                        cmd.Parameters.AddWithValue("@Description", ((DataRowView)eval.lvTableData.SelectedItem).Row.ItemArray[2].ToString());
                         cmd.ExecuteNonQuery();
                     }
                     MessageBox.Show("Deleted Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);

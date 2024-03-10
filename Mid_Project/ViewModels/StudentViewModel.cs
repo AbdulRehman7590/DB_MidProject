@@ -214,24 +214,12 @@ namespace Mid_Project.ViewModels
                         con.Open();
 
                         SqlCommand cmd = new SqlCommand(@"BEGIN TRANSACTION
-                                                      UPDATE Student SET RegistrationNo = @RegistrationNo WHERE Id = @Id; 
-                                                      UPDATE Person SET FirstName = @FirstName, LastName = @LastName, Contact = @Contact, 
-                                                      Email = @Email, DateOfBirth = @DateOfBirth, Gender = @Gender WHERE Id = @Id;
+                                                      UPDATE Person SET FirstName = @FirstName WHERE Id = @Id;
+                                                      UPDATE GroupStudent SET Status = 4 WHERE StudentId = @Id;
                                                       COMMIT TRANSACTION", con);
 
                         cmd.Parameters.AddWithValue("@Id", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[0].ToString());
-                        cmd.Parameters.AddWithValue("@RegistrationNo", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[1].ToString());
                         cmd.Parameters.AddWithValue("@FirstName", "!!" + ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[2].ToString());
-                        cmd.Parameters.AddWithValue("@LastName", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[3].ToString());
-                        cmd.Parameters.AddWithValue("@Contact", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[4].ToString());
-                        cmd.Parameters.AddWithValue("@Email", ((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[5].ToString());
-                        cmd.Parameters.AddWithValue("@DateOfBirth", DateTime.Parse(((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[6].ToString()));
-
-                        if (((DataRowView)man.lvTableData.SelectedItem).Row.ItemArray[7].ToString() == "Male")
-                            cmd.Parameters.AddWithValue("@Gender", 1);
-                        else
-                            cmd.Parameters.AddWithValue("@Gender", 2);
-
                         cmd.ExecuteNonQuery();
                     }
                     MessageBox.Show("Deleted Successfully!!!", "Information!", MessageBoxButton.OK, MessageBoxImage.Information);
