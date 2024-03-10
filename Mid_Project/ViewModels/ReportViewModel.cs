@@ -23,6 +23,7 @@ namespace Mid_Project.ViewModels
         public RelayCommands report2 => new RelayCommands(execute => Report2());
         public RelayCommands report3 => new RelayCommands(execute => Report3());
         public RelayCommands report4 => new RelayCommands(execute => Report4());
+        public RelayCommands report5 => new RelayCommands(execute => Report5());
 
 
 
@@ -90,6 +91,21 @@ namespace Mid_Project.ViewModels
                              	JOIN Student S ON GS.StudentId = S.Id
                              	JOIN Person P ON P.Id = S.Id
                              WHERE P.FirstName NOT LIKE '!!%' AND GS.Status = (SELECT Id FROM Lookup Lk WHERE Value = 'Active')";
+            PDFGenerator.GeneratePDF(query, "Project Students");
+        }
+        
+
+        /// <summary>
+        /// Report No. 4 ////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// </summary>
+        private void Report5()
+        {
+            string query = @"SELECT P.Id AS ProjectID, P.Title, 
+                                    CASE WHEN GP.GroupId IS NOT NULL THEN 'Assigned' ELSE 'Not Assigned' END AS Status, 
+                                    P.Description
+                             FROM Project P 
+                             LEFT JOIN GroupProject GP ON P.Id = GP.ProjectId
+                             WHERE P.Title NOT LIKE '!!%'";
             PDFGenerator.GeneratePDF(query, "Project Students");
         }
 

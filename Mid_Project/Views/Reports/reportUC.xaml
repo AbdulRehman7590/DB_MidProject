@@ -29,6 +29,10 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Projects Details" Command="{Binding report5}"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="Project Advisors Report" Command="{Binding report1}"/>
                 <Button Content="Project Students Report" Command="{Binding report4}"/>
             </StackPanel>
