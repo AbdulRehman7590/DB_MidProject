@@ -22,15 +22,10 @@
     <!-- UC Grid -->
     <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
 
-        <StackPanel Orientation="Vertical">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Make New Group" Command="{Binding makeGroup}"/>
-                <Button Content="Assign Group Project" Command="{Binding addGroupProject}"/>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="View Groups" Command="{Binding viewGroup}" Background="DarkCyan"/>
-            </StackPanel>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+            <Button Content="Assign Group Project" Command="{Binding addGroupProject}"/>
+            <Button Content="View Group Projects" Command="{Binding viewGroup}" Background="DarkCyan"/>
         </StackPanel>
+
     </Grid>
 </UserControl>

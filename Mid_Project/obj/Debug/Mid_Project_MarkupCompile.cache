@@ -4,16 +4,16 @@
 winexe
 C#
 .cs
-D:\4th semester\DB_Projects\Mid_Project\Mid_Project\obj\Debug\
+D:\4th semester\DB_Projects\Mid_Project Data\Mid_Project\Mid_Project\obj\Debug\
 Mid_Project
 none
 false
 DEBUG;TRACE
-D:\4th semester\DB_Projects\Mid_Project\Mid_Project\App.xaml
+D:\4th semester\DB_Projects\Mid_Project Data\Mid_Project\Mid_Project\App.xaml
 18-850093124
 
 33-1475068753
-171414409407
+17-1598970129
 MainWindow.xaml;Views\Advisor\AddAvisorUC.xaml;Views\Advisor\advisorUC.xaml;Views\CommonUCs\ViewData.xaml;Views\Evaluation\AddUpdateUC.xaml;Views\Evaluation\evaluationUC.xaml;Views\Evaluation\MarkUpdateUC.xaml;Views\Group\AddGroupUC.xaml;Views\Group\AssignProjectUC.xaml;Views\Group\groupUC.xaml;Views\Group\ManageGroups.xaml;Views\Group\UpdateGroupData.xaml;Views\Project\AddProjectAdvisorUC.xaml;Views\Project\AddProjectUC.xaml;Views\Project\projectUC.xaml;Views\Reports\reportUC.xaml;Views\Student\studentUC.xaml;Views\Student\AddStudentUC.xaml;
 
 False

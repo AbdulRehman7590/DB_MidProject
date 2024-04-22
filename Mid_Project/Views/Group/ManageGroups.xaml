@@ -16,6 +16,7 @@
             <Setter Property="FontFamily" Value="Arial"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Background" Value="DarkCyan"/>
         </Style>
         <Style TargetType="TextBlock">
             <Setter Property="Height" Value="auto"/>
@@ -35,14 +36,14 @@
             <RowDefinition Height=".25*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Select Any Row to perform the button operations" Grid.Row="0"/>
+        <TextBlock Text="Select Any Row to perform the button operations"/>
         <DataGrid Grid.Row="1" x:Name="dgTableData" Margin="10" BorderThickness="3" IsReadOnly="True"/>
 
 
         <StackPanel Orientation="Horizontal" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <Button x:Name="btnUpdatePrj" Content="Update Project" Background="DarkCyan"/>
+            <Button x:Name="btnUpdatePrj" Content="Update Project"/>
             <Button x:Name="btnAddEvaluation" Content="Add Evaluation" Background="#20B1AA"/>
-            <Button x:Name="btnUpdateStu" Content="Update Students" Background="DarkCyan"/>
+            <Button x:Name="btnUpdateStu" Content="Update Students"/>
         </StackPanel>
     </Grid>
 </UserControl>

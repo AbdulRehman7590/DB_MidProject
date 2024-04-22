@@ -1,10 +1,12 @@
-﻿using Mid_Project.Models;
+﻿using iTextSharp.text.pdf.security;
+using Mid_Project.Models;
 using Mid_Project.MVVM;
 using Mid_Project.Views.CommonUCs;
 using Mid_Project.Views.Group;
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -25,65 +27,9 @@ namespace Mid_Project.ViewModels
         /// <summary>
         /// Relay Commands ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// </summary>
-        public RelayCommands makeGroup => new RelayCommands(execute => MakeGroup());
         public RelayCommands viewGroup => new RelayCommands(execute => ViewGroup());
         public RelayCommands addGroupProject => new RelayCommands(execute => AddGroupProject());
 
-
-        /// <summary>
-        /// Make Group /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        private void MakeGroup()
-        {
-            Panel.Children.Clear();
-            AddGroupUC grp = new AddGroupUC();
-
-            grp.btnEnter.Content = "Make Group";
-            grp.btnEnter.Command = new RelayCommands(execute => MakeGrp(grp));
-
-            Panel.Children.Add(grp);
-            address.Content = "Home -> Group Section -> Make new Group";
-        }
-
-        private void MakeGrp(AddGroupUC grp)
-        {
-            if (!string.IsNullOrEmpty(grp.txtdate.Text))
-            {
-                if (addingGroupInDb(grp))
-                {
-                    MessageBox.Show("Group Added Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    clearGroupData(grp);
-                }
-            }
-            else
-                MessageBox.Show("Please fill all the fields", "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        private bool addingGroupInDb(AddGroupUC grp)
-        {
-            try
-            {
-                using (var con = Configuration.getInstance().getConnection())
-                {
-                    con.Open();
-
-                    SqlCommand cmd = new SqlCommand(@"INSERT INTO [Group] VALUES (@Created_On)", con);
-                    cmd.Parameters.AddWithValue("@Created_On", grp.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
-                    cmd.ExecuteNonQuery();
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
-            }
-        }
-
-        private void clearGroupData(AddGroupUC grp)
-        {
-            grp.txtdate.Text = string.Empty;
-        }
 
 
         /// <summary>
@@ -108,7 +54,7 @@ namespace Mid_Project.ViewModels
             Configuration.ShowData(grp.dgTableData, query);
 
             grp.btnUpdatePrj.Command = new RelayCommands(execute => UpdateGroupProject(grp), canExecute => checkStuCount(grp));
-            grp.btnUpdateStu.Command = new RelayCommands(execute => UpdateGroupStudent(grp), canExecute => grp.dgTableData.SelectedItem != null);
+            grp.btnUpdateStu.Command = new RelayCommands(execute => UpdateGroupStudent(((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[0].ToString()), canExecute => grp.dgTableData.SelectedItem != null);
             grp.btnAddEvaluation.Command = new RelayCommands(execute => AddEvaluation(grp), canExecute => checkStuCount(grp));
 
             Panel.Children.Add(grp);
@@ -126,6 +72,36 @@ namespace Mid_Project.ViewModels
             return false;
         }
 
+
+        /// <summary>
+        /// Make Group /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// </summary>
+        private void addGroupInDb()
+        {
+            try
+            {
+                using (var con = Configuration.getInstance().getConnection())
+                {
+                    con.Open();
+
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO [Group] VALUES (@Created_On)", con);
+                    cmd.Parameters.AddWithValue("@Created_On", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+
+                if (MessageBox.Show("New Group Created Successfully", "Information!!!", MessageBoxButton.OK, MessageBoxImage.Information) == MessageBoxResult.OK)
+                {
+                    AddGroupProject();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!!!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+
         /// <summary>
         /// Add Group Project ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// </summary>
@@ -140,8 +116,10 @@ namespace Mid_Project.ViewModels
                              WHERE GP.ProjectId IS NULL";
             Configuration.ShowData(grp.lvTableData, query);
 
-            grp.btnDelete.Visibility = Visibility.Hidden;
             grp.btnUpdate.Visibility = Visibility.Hidden;
+            
+            grp.btnDelete.Content = "Make Group";
+            grp.btnDelete.Command = new RelayCommands(execute => addGroupInDb());
 
             grp.lvTableData.MouseDoubleClick += (sender, e) => AssignGroupProject(grp);
 
@@ -165,6 +143,8 @@ namespace Mid_Project.ViewModels
             prj.lbldata.Visibility = Visibility.Hidden;
             prj.lblcurrent.Visibility = Visibility.Hidden;
             prj.btnDelete.Visibility = Visibility.Hidden;
+            prj.lbldate.Visibility = Visibility.Hidden;
+            prj.txtdate.Visibility = Visibility.Hidden;
 
             prj.btnEnter.Content = "Assign Project";
             prj.btnEnter.Command = new RelayCommands(execute => UpdateGProject(prj, gID), canExecute => prj.dgProjects.SelectedItem != null && prj.txtdate.Text != null);
@@ -216,7 +196,7 @@ namespace Mid_Project.ViewModels
                         SqlCommand cmd = new SqlCommand(@"INSERT INTO GroupProject VALUES (@ProjectId, @GroupId, @AssignmentDate)", con);
                         cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)prj.dgProjects.SelectedItem).Row.ItemArray[0].ToString());
                         cmd.Parameters.AddWithValue("@GroupId", id);
-                        cmd.Parameters.AddWithValue("@AssignmentDate", prj.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
 
                         cmd.ExecuteNonQuery();
                     }
@@ -224,7 +204,7 @@ namespace Mid_Project.ViewModels
                     {
                         SqlCommand cmd = new SqlCommand(@"UPDATE GroupProject SET ProjectId = @ProjectId, AssignmentDate = @AssignmentDate WHERE GroupId = @GroupId", con);
                         cmd.Parameters.AddWithValue("@GroupId", id);
-                        cmd.Parameters.AddWithValue("@AssignmentDate", prj.txtdate.SelectedDate.Value.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@AssignmentDate", DateTime.Now);
                         cmd.Parameters.AddWithValue("@ProjectId", ((DataRowView)prj.dgProjects.SelectedItem).Row.ItemArray[0].ToString());
 
                         cmd.ExecuteNonQuery();
@@ -332,16 +312,15 @@ namespace Mid_Project.ViewModels
         /// <summary>
         /// Updating Group Students ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// </summary>
-        private void UpdateGroupStudent(ManageGroups grp)
+        private void UpdateGroupStudent(string gId)
         {
             Panel.Children.Clear();
             UpdateGroupData grpS = new UpdateGroupData();
 
-            string gid = ((DataRowView)grp.dgTableData.SelectedItem).Row.ItemArray[0].ToString();
-            RefreshPageData(grpS, gid);
+            RefreshPageData(grpS, gId);
 
-            grpS.btnUpdate.Command = new RelayCommands(execute => UpdateGS(grpS, gid), canExecute => grpS.dgUnselect.SelectedItem != null);
-            grpS.btnDelete.Command = new RelayCommands(execute => DeleteGS(grpS, gid), canExecute => grpS.dgSelect.SelectedItem != null);
+            grpS.btnUpdate.Command = new RelayCommands(execute => UpdateGS(grpS, gId), canExecute => grpS.dgUnselect.SelectedItem != null);
+            grpS.btnDelete.Command = new RelayCommands(execute => DeleteGS(grpS, gId), canExecute => grpS.dgSelect.SelectedItem != null);
 
             Panel.Children.Add(grpS);
             address.Content = "Home -> Group Section -> View Groups -> Update Group Students";
